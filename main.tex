@@ -22,6 +22,9 @@
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
 \newcommand{\finit}{\ensuremath{\vec{f}^\circ}}
+\newcommand{\favg}{\ensuremath{\langle f \rangle}}
+\newcommand{\fin}{\ensuremath{\langle f_{\text{in}} \rangle}}
+\newcommand{\stot}{\ensuremath{s_\text{tot}}}
 \newcommand{\flux}[2]{\ensuremath{v_{{#1} \rightarrow {#2}}}}
 
 \begin{document}
@@ -46,87 +49,90 @@ Imagine a general metabolic network, which can be described as a standard graph,
 
 We assume the system is at metabolic steady state, i.e. therefore all fluxes and pool sizes are constant and given by \flux{i}{j} (the flux from $S_i$ to $S_j$) and $s_i$ (the pool size of $S_i$). We define $\flux{i}{j} = 0$. The labeled fractions are not at steady-state and we aim to describe their time evolution, denoted $f_i(t) \equiv s_i^1(t) / (s_i^0(t) + s_i^1(t)) = s_i^1(t) / s_i$. Note that $s_i$ is not a function of time, since it is assumed to be at steady-state. Then:
 \begin{eqnarray}
-    \frac{d s_i^0}{dt} &=& \sum_j f_j~\flux{j}{i} ~~-~~ \sum_j f_i~\flux{i}{j} = \\
-    &=& \sum_j f_j~\flux{j}{i} ~~-~~ f_i \sum_j \flux{i}{j}
+    \frac{d s_i^0}{dt} ~=~
+    \sum_j f_j~\flux{j}{i} ~-~ \sum_j f_i~\flux{i}{j} ~=~ 
+    \sum_j f_j~\flux{j}{i} ~-~ f_i \sum_j \flux{i}{j}
 \end{eqnarray}
-We can divide both sides by $s_i$ to get:
+which can be written also in matrix notation (where we use the convention that $\vec{x}$ is a row vector):
 \begin{eqnarray}
-    \frac{d f_i}{dt} = \sum_j \frac{\flux{j}{i}}{s_i} \cdot f_j ~~-~~ \sum_j \frac{\flux{i}{j}}{s_i} \cdot f_i
-\end{eqnarray}
-
-Now, if we rewrite this system of equations in matrix notation, we see that $\vec{f}(t)$ (the vector of all labeled fractions) is described by a homogenous system of first order differential equations:
-\begin{eqnarray}\label{eq:homogenous}
-    \frac{d\vec{f}}{d t} = \mathbf{M} \cdot \vec{f}
-\end{eqnarray}
-where $\mathbf{M}$ is a square matrix, defined by:
-\begin{eqnarray}
-    M_{i \neq j} &=& \frac{\flux{j}{i}}{s_i}\\
-    M_{ii} &=& -\frac{1}{s_i}\sum_{j} \flux{i}{j}
-\end{eqnarray}
-or in other words, if $\mathbf{V}$ is the flux matrix (where $V_{ij} = \flux{i}{j}$) then:
-\begin{eqnarray}
-    \mathbf{M} = \text{diag}(\vec{s})^{-1} \cdot \left( \mathbf{V}^\top - \text{diag}(\mathbf{V}^\top~\vec{1}_n) \right)
+	\frac{d\vec{s}^0}{dt} 
+	&=& \vec{f}~\mathbf{V} - \vec{f}~\text{diag}(\mathbf{V}~\vec{1}_n^\top) \\
+	\frac{d\vec{f}}{dt}~\text{diag}(\vec{s})
+	&=& \vec{f} \left( \mathbf{V} - \text{diag}(\mathbf{V}~\vec{1}_n^\top) \right)
 \end{eqnarray}
 
 \subsection{Homogeneous linear system of ODEs}
-We just showed that the steady-state dynamic labeling problem is a homogenous linear system of ODEs:
-\begin{eqnarray}
-    \frac{d\vec{f}}{d t} &=& \mathbf{M} ~ \vec{f}(t) \\
+To summarize the previous section, we showed that dynamic labeling is a homogeneous linear system of ODEs:
+\begin{eqnarray}\label{eq:homogenous}
+    \frac{d\vec{f}}{d t} &=& \vec{f}~\mathbf{M} \\
     \vec{f}(0) &=& \finit
 \end{eqnarray}
-which has the general solution:
+where $\mathbf{M} = \left( \mathbf{V} - \text{diag}(\mathbf{V}~\vec{1}_n^\top) \right) \text{diag}(\vec{s})^{-1}$. This system has the general solution:
 \begin{eqnarray}
-    \vec{f}(t) = e^{\mathbf{M} t}~\finit =  \mathbf{P}~e^{\mathbf{J}\,t}~\mathbf{P}^{-1}~\finit
+    \vec{f}(t) = \finit~e^{\mathbf{M} t} =  \finit~\mathbf{P}~e^{\mathbf{J}\,t}~\mathbf{P}^{-1}
 \end{eqnarray}
-where $\mathbf{J}$ is the Jordan normal form of $\mathbf{M}$, i.e. $\mathbf{P}~\mathbf{J}~\mathbf{P}^{-1} = \mathbf{M}$. When $\mathbf{J}$ is a diagonal matrix, $\text{diag}(\vec{\lambda})$, we can change the multiplication order, so that the formula takes on a simpler form $\vec{f}(t) = \mathbf{A} e^{\vec{\lambda} t}$:
+where $\mathbf{J}$ is the Jordan normal form of $\mathbf{M}$, i.e. $\mathbf{P}~\mathbf{J}~\mathbf{P}^{-1} = \mathbf{M}$. When $\mathbf{J}$ is a diagonal matrix, $\text{diag}(\vec{\lambda})$, we can change the multiplication order, so that the formula takes on a simpler form $\vec{f}(t) = e^{\vec{\lambda} t}\mathbf{A}$:
 \begin{eqnarray}\label{eq:homogenous_solution}
-    \vec{f}(t) = \mathbf{P}~ \text{diag}\left(e^{\vec{\lambda} t}\right) ~\mathbf{P}^{-1}~\finit = \mathbf{P}~\text{diag}\left( \mathbf{P}^{-1} ~\finit\right)~ e^{\vec{\lambda} t}\,.
+    \vec{f}(t) =
+    \finit~\mathbf{P} ~ \text{diag}\left(e^{\vec{\lambda} t}\right) ~ \mathbf{P}^{-1} =
+    e^{\vec{\lambda} t} ~ \text{diag}\left(\finit~\mathbf{P}\right) ~ \mathbf{P}^{-1}\,.
 \end{eqnarray}
+
+\begin{eqnarray}
+\mathbf{M} = \left( \mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V}) \right) \text{diag}(\vec{s})^{-1}
+\end{eqnarray}
+
+\subsection{Average labeling fraction is constant}
+The average amount of label in all pools (weighted by their relative sizes) is given by $\favg ~=~ \vec{f} \, \vec{s}^\top / \stot$, where $\stot \equiv \sum_i s_i$. Using the definitions from the previous sections, we can solve the following time derivative:
+\begin{eqnarray}
+\stot\frac{d\favg}{dt} &=& \frac{d\vec{f}}{dt} \, \vec{s}^\top =
+\vec{f} \, \mathbf{M} \, \vec{s}^\top = 
+\vec{f} \, \left( \mathbf{V} - \text{diag}(\mathbf{V}~\vec{1}_n^\top) \right) \text{diag}(\vec{s})^{-1} \, \vec{s}^\top \nonumber\\
+&=& 
+\vec{f} \, \left( \mathbf{V} - \text{diag}(\mathbf{V}~\vec{1}_n^\top) \right) \vec{1}_n^\top =
+\vec{f} \, \left( \mathbf{V}~\vec{1}_n^\top - \text{diag}(\mathbf{V}~\vec{1}_n^\top)~\vec{1}_n^\top \right) 
+= \vec{f} \, \left( \mathbf{V}~\vec{1}_n^\top - \mathbf{V}~\vec{1}_n^\top \right) = 0
+\label{eq:total_label}
+\end{eqnarray}
+which tells us that $\favg$ is constant, and set by the initial conditions:
+\begin{eqnarray}
+	\favg &=& \frac{\finit \, \vec{s}^\top}{\stot}
+\end{eqnarray}
+
+\subsection{Open systems}
+Importantly, our ODE system ignores some fluxes that exist in the metabolic system, but do not have an effect on labeling. This is necessary since a non-trivial steady-state flux requires an open system, where some fluxes enter from the ``outside'' and some material is constantly removed (e.g. to biomass). Also, we will typically want to simulate cases where at some time $t=0$ labels start to spread out from a single node ($S_0$), and it remains fully labeled throughout the experiment. The source of this label (which has to constantly replenish $S_0$) is not included in our system.
+
+Our current definition of $\mathbf{M}$ is only valid for closed systems, and to ...
 
 \subsection{Example: linear pathway with only irreversible steps}
-Image a cascade of reactions which is at steady state, but the fluxes are not necessarily equal (e.g. there could be irreversible branching fluxes that are not considered as part of the system):
+Image a cascade of reactions which is at steady state, but the fluxes are not necessarily equal (e.g. there could be irreversible branching fluxes):
 \begin{equation}
-    \xrightarrow{v_1} S_0 
-    \xrightarrow{v_1} S_1 
-    \xrightarrow{v_2} S_2
+    \xrightarrow{v_0} \underset{\downarrow}{S_0} 
+    \xrightarrow{v_1} \underset{\downarrow}{S_1} 
+    \xrightarrow{v_2} \underset{\downarrow}{S_2}
     \xrightarrow{v_3} \ldots 
-    \xrightarrow{v_n} S_n
-    \rightarrow \varnothing
+    \xrightarrow{v_n} \underset{\downarrow}{S_n}
 \end{equation}
-At time $t = 0$, the first pool ($S_0$) is replaced with a fully labeled one, while all downstream pools start completely unlabeled. In addition, we define $\tau_i \equiv \frac{s_i}{v_i}$, then the $\mathbf{M}$ matrix will be:
+At time $t = 0$, the first pool ($S_0$) is replaced with a fully labeled one, while all downstream pools start completely unlabeled. In addition, we define $\tau_i \equiv \frac{s_i}{v_i}$. The system is therefore described by:
 \begin{eqnarray}
+\finit = \left[1~0~0~\ldots~0\right]
+~~~~
 \mathbf{M} =
   \begin{bmatrix}
-    0 & 0 & 0 & 0 & \ldots & 0 & 0\\
-    1/\tau_1 & -1/\tau_1 & 0 & 0 & \ldots & 0 & 0\\
-    0 & 1/\tau_2 & -1/\tau_2 & 0 & \ldots & 0 & 0\\
-    0 & 0 & 1/\tau_3 & -1/\tau_3 & \ldots & 0 & 0\\
+    -1/\tau_0 & 1/\tau_1 & 0 & 0 & \ldots & 0 & 0\\
+    0 & -1/\tau_1 & 1/\tau_2 & 0 & \ldots & 0 & 0\\
+    0 & 0 & -1/\tau_2 & 1/\tau_3 & \ldots & 0 & 0\\
+    0 & 0 & 0 & -1/\tau_3 & \ldots & 0 & 0\\
     & & & \vdots & & &\\
-    0 & 0 & 0 & 0 & \ldots & 1/\tau_n & -1/\tau_n \\
-  \end{bmatrix}
-  ~~~~
-  \finit = 
-  \begin{bmatrix}
-  1 \\ 0 \\ 0 \\ 0 \\ \vdots \\ 0
+    0 & 0 & 0 & 0 & \ldots & 0 & -1/\tau_n \\
   \end{bmatrix}
 \end{eqnarray}
 
-Note that the first row in $\mathbf{M}$ is all zeros since it represents the coefficients of the time derivative of $d f_0/dt$ which is equal to $0$. To describe the solution for this ODE system, we first define $\forall i \neq j:~g_{ij} \equiv (1 - \tau_i/\tau_j)^{-1}$, and $\forall i:~g_{ii} \equiv 1$. We use \href{https://www.sympy.org/}{Sympy} to find the Jordan normal form of $\mathbf{M}$ and $\mathbf{P}^{-1} ~\finit$:
+To describe the solution for this ODE system, we first define $\forall i \neq j:~g_{ij} \equiv (1 - \tau_i/\tau_j)^{-1}$, and $\forall i:~g_{ii} \equiv 1$. We use \href{https://www.sympy.org/}{Sympy} to find the Jordan normal form of $\mathbf{M}$
 \begin{eqnarray}
-\mathbf{P} =
-  \begin{bmatrix}
-    1 & 0 & 0 & \ldots & 0 \\
-    1 & \prod_2^n g_{i1}^{-1} & 0 & \ldots & 0 \\
-    1 & \prod_3^n g_{i1}^{-1} & \prod_3^n g_{i2}^{-1} & \ldots & 0 \\
-    1 & \prod_4^n g_{i1}^{-1} & \prod_4^n g_{i2}^{-1} & \ldots & 0 \\
-    1 & \prod_5^n g_{i1}^{-1} & \prod_5^n g_{i1}^{-1} & \ldots & 0 \\
-     & \vdots & & & & \\
-    1 & 1 & 1 & \ldots & 1
-\end{bmatrix}
-~~~
 \mathbf{J} =
   \begin{bmatrix}
-    0 & 0 & 0 & \ldots & 0 \\
+    -\frac{1}{\tau_0} & 0 & 0 & \ldots & 0 \\
     0 & -\frac{1}{\tau_1} & 0 & \ldots & 0 \\
     0 & 0 & -\frac{1}{\tau_2} & \ldots & 0 \\
     0 & 0 & 0 & \ldots & 0 \\
@@ -134,47 +140,59 @@ Note that the first row in $\mathbf{M}$ is all zeros since it represents the coe
     0 & 0 & 0 & \ldots & -\frac{1}{\tau_n}
 \end{bmatrix}
 ~~~
-\mathbf{P}^{-1} ~\finit = 
-	\begin{bmatrix}
-	1 \\
-	-\prod_1^n g_{i1} \\
-	-\prod_1^n g_{i2} \\
-	-\prod_1^n g_{i3} \\
-	-\prod_1^n g_{i4} \\
-	\vdots \\
-	-\prod_1^n g_{in}
-	\end{bmatrix}
+\mathbf{P^{-1}} =
+\begin{bmatrix}
+1 & \prod_1^1 g_{i0} & \prod_1^2 g_{i0} & \prod_1^3 g_{i0} & \prod_1^4 g_{i0} & \ldots & \prod_1^n g_{i0} \\
+0 & 1 & \prod_2^2 g_{i1} & \prod_2^3 g_{i1} & \prod_2^4 g_{i1} & \ldots & \prod_2^n g_{i1} \\
+0 & 0 & 1 & \prod_3^3 g_{i2} & \prod_3^4 g_{i2} & \ldots & \prod_3^n g_{i2} \\
+& \vdots & & & & & \\
+0 & 0 & 0 & 0 & 0 & \ldots & 1
+\end{bmatrix}
 \end{eqnarray}
-and therefore the solution for $f(t)$ is:
+and\[\finit~\mathbf{P} = \left[1 ~~~ -g_{10}g_{11} ~~~ -g_{20}g_{12}g_{22} ~~~ -g_{30}g_{13}g_{23}g_{33} ~~~ \ldots ~~~ -g_{n0}\prod_{i=1}^n g_{in} \right]\,.\]
+Using these values in Equation \ref{eq:homogenous_solution} yields the following expression:
 \begin{eqnarray}
-    f(t) =
-    \mathbf{P}~\text{diag}\left(\mathbf{P}^{-1} ~\finit\right)~e^{\vec{\lambda}t} =
+	\vec{f}(t) &=& e^{\vec{\lambda} t} ~ \text{diag}\left(\finit~\mathbf{P}\right) ~ \mathbf{P}^{-1} \\
+	&=&
+	\left[ e^{-\frac{t}{\tau_0}} ~~ e^{-\frac{t}{\tau_1}} ~~ e^{-\frac{t}{\tau_2}} ~~ \ldots ~~ e^{-\frac{t}{\tau_n}}\right]
     \begin{bmatrix}
-        1 & 0 & 0 & 0 & \ldots & 0 \\ \\
-        1 & -\prod_1^1 g_{i1} & 0 & 0 & \ldots & 0 \\ \\
-        1 & -\prod_1^2 g_{i1} & -\prod_1^2 g_{i2} & 0 & \ldots & 0 \\ \\
-        1 & -\prod_1^3 g_{i1} & -\prod_1^3 g_{i2} & -\prod_1^3 g_{i3} & \ldots & 0 \\ \\
-        1 & -\prod_1^4 g_{i1} & -\prod_1^4 g_{i2} & -\prod_1^4 g_{i3} & \ldots & 0 \\         & \vdots & & & & \\
-        1 & -\prod_1^n g_{i1} & -\prod_1^n g_{i2} & -\prod_1^n g_{i3} &\ldots & -\prod_1^n g_{in}
-    \end{bmatrix}
-    \cdot
-    \begin{bmatrix}
-       1 \\ \\
-       e^{-t/\tau_1} \\ \\
-       e^{-t/\tau_2} \\ \\
-       e^{-t/\tau_3} \\ \\
-       e^{-t/\tau_4} \\
-       \vdots \\
-       e^{-t/\tau_n}
-    \end{bmatrix}
+        1 & \prod_1^1 g_{i0} & \prod_1^2 g_{i0} & \prod_1^3 g_{i0} & \ldots & \prod_1^n g_{i0} \\ \\
+        0 & -g_{10}\prod_1^1 g_{i1} & -g_{10}\prod_1^2 g_{i1} & -g_{10}\prod_1^3 g_{i1}  & \ldots & -g_{10}\prod_1^n g_{i1} \\ \\
+        0 & 0 & -g_{20}\prod_1^2 g_{i2} & -g_{20}\prod_1^3 g_{i2} & \ldots & -g_{20}\prod_1^n g_{i2} \\
+         & \vdots & & & & \\
+        0 & 0 & 0 & 0 & \ldots & -g_{n0}\prod_1^n g_{in}
+    \end{bmatrix} \nonumber
 \end{eqnarray}
 
 We can also write this equation in a compact way without using matrix multiplications:
-\begin{equation}
-    f_k(t) = 
-    1 - \sum_{j=1}^{k} \left(\prod_{i=1}^{k} g_{ij}\right) e^{- t/\tau_j} = 
-    1 - \sum_{j=1}^{k} \left(\prod_{i = 1, i \neq j}^{k} 1 - \tau_i/\tau_j\right)^{-1} e^{- t/\tau_j}
-\end{equation}
+\begin{eqnarray}
+    f_k(t) &=& \left(\prod_{i=1}^{k} g_{i0}\right) e^{- t/\tau_0}
+    ~-~ \sum_{j=1}^{k} g_{j0} \left(\prod_{i=1}^{k} g_{ij}\right) e^{- t/\tau_j} \\
+    &=& 
+    \left(\prod_{i=1}^{k} 1 - \tau_i/\tau_0 \right)^{-1} e^{- t/\tau_0}
+    ~-~
+    \sum_{j=1}^{k} (1-\tau_j/\tau_0)^{-1} \left(\prod_{i = 1, i \neq j}^{k} 1 - \tau_i/\tau_j\right)^{-1} e^{- t/\tau_j}
+\end{eqnarray}
+
+\subsubsection{Defining the internal average labeling fraction}
+
+We define $\fin$ as the weighted average of labels among all internal pools excluding $S_0$, namely 
+\begin{eqnarray}
+	\fin \equiv 
+	\frac{\sum_{i=1}^{n} f_i \, s_i}{\sum_{i=1}^{n} s_i} =
+	\frac{\vec{f} \, \vec{s}^\top - f_0 \, s_0}{\stot - s_0} = 
+	\frac{\favg \, \stot - f_0 \, s_0}{\stot - s_0}
+\end{eqnarray}
+This quantity is useful in some experimental setups, where the internal average labeling fraction can be directly measured. For instance, the $^{13}$C fraction of all biomass carbons can be measured by complete oxidation of dry biomass to carbon dioxide (after removing all the externally labeled compounds in the media).
+
+As we showed in Equation \ref{eq:total_label}, $\favg$ is constant and set by the initial conditions. In this case, all pools start unlabeled except for $S_0$ which is fully labeled at $t = 0$, and therefore $\favg = s_0 / \stot$.
+
+\begin{eqnarray}
+	\fin &=& 
+	\frac{s_0 - f_0 \, s_0}{\stot - s_0} = 
+	\frac{1 - f_0}{\stot/s_0 - 1}
+\end{eqnarray}
+
 
 \section{Linear irreversible pathway with dilution}\label{sec:linear_examples}
 Assume that the pathway exists inside an exponentially growing cell, all species are at steady state, and that no side fluxes exist besides the growth dilution (which is given by $\mu s_i$). In addition, the final product $S_n$ is a dead-end (e.g. it could be a direct constituent of biomass like a membrane lipid). The fluxes are thus given by:
@@ -185,28 +203,6 @@ and therefore $\tau_i = s_i/v_i = s_i (\mu \sum_{k=i}^n s_k)^{-1}$. It is conven
 \begin{equation}\label{eq:dilution}
     f_k(t) = 1 - \sum_{j=1}^{k} \left(\prod_{i = 1, i \neq j}^{k} 1 - \phi_i/\phi_j\right)^{-1} e^{- \mu t / \phi_j}
 \end{equation}
-It is useful to describe the dynamics as a function of the fractional labeling of the total pool without $S_0$, which we denote $f_{tot}$. As we will see, $f_{tot}$ will have a simple dependence on time, and we can use it to replace the time variable for all of the other fractions.
-
-\begin{eqnarray}
-	f_{tot} &=& \vec{s}^\top ~ \vec{f} \\
-	\frac{d f_{tot}}{dt} &=& 
-	 \vec{s}^\top ~ \frac{d\vec{f}}{dt} =
-	 \vec{s}^\top ~ M ~ \vec{f} = 
-	 \vec{s}^\top ~ \text{diag}(\vec{s})^{-1} ~ \left( \mathbf{V}^\top - \text{diag}(\mathbf{V}^\top~\vec{1}_n) \right) ~ \vec{f} \nonumber\\
-	 &=& \vec{1}_n^\top~\left( \mathbf{V}^\top - \text{diag}(\mathbf{V}^\top~\vec{1}_n) \right) ~ \vec{f} = 
-	 \vec{1}_n^\top \left(\mathbf{V}^\top - \mathbf{V} \right) \vec{f}
-\end{eqnarray}
-As we know, $\mathbf{V}$ is an off-diagonal matrix (\flux{i}{j} is zero unless $i = j-1$), which means that $\left(\mathbf{V}^\top - \mathbf{V} \right)$ has not more than two non-zero values in each columns and therefore: \footnote{instead of $\vec{s}$ we need to define it without $S_0$, and then the formulae loose the first column, which solves the issue. In addition, we also need to divide everything by the sum of $s_k$, since it is the average not the sum.}
-\begin{eqnarray}
-	\vec{1}_n^\top \left(\mathbf{V}^\top - \mathbf{V} \right) &=& \left[\flux{0}{1}~,~ \flux{1}{2}-\flux{0}{1} ~,~ \flux{2}{3}-\flux{1}{2} ~,~ \ldots~,~ -\flux{n-1}{n} \right] \nonumber\\
-	&=& \left[ \mu \sum_1^n{s_k} ~,~ -\mu s_1 ~,~ -\mu s_2 ~,~ \ldots ~,~ -\mu s_n \right] = -\mu \vec{s}^\top
-\end{eqnarray}
-
-So, finally, we get the formula:
-\begin{eqnarray}
-	\frac{d f_{tot}}{dt} &=& \vec{1}_n^\top \left(\mathbf{V}^\top - \mathbf{V} \right) \vec{f} = -\mu \vec{s}^\top~\vec{f} = -\mu f_{tot} \\
-	f_{tot} &=& 1 - e^{-\mu t} \label{eq:ftot}
-\end{eqnarray}
 
 \subsection{Example: four equal pool sizes}
 In this example, we choose $n = 4$, $\mu = 1$ hour$^{-1}$ and $s_1 = \ldots = s_4$. Then $\phi_i = 1/(5-i)$ and therefore:
