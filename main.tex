@@ -21,23 +21,37 @@
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
-\newcommand{\finit}{\vec{f}^\circ}
+\newcommand{\finit}{\ensuremath{\vec{f}^\circ}}
+\newcommand{\flux}[2]{\ensuremath{v_{{#1} \rightarrow {#2}}}}
 
 \begin{document}
 
 \maketitle
 
+\section{Introduction}
+
+The internal metabolism of cells has always been a tough nut to crack. Spectroscopic methods that can visualize small molecules cover only a handful of specific compounds. On the other hand, the overlapping spectra of the diverse metabolome of most cells makes it extremely difficult to quantify single metabolites using spectroscopic methods. Therefore, the ubiquitous analytical method used in metabolomic studies is mass spectroscopy (MS), which is both specific and sensitive enough to cover most metabolites in the cell. The downsides are, of course, its destructive nature and the required amounts that currently don't allow for single-cells studies of bacteria.
+
+Another complication that makes metabolism difficult to study, is the inconvenient fact that metabolite abundances are usually not the most important phenotype, but rather metabolic flux. Flux is what directs cell resources through different pathways to the target required for cell proliferation (or other factors that affect fitness). Furthermore, the enzymes required to catalyze metabolic reactions are typically more expensive than the intermediates metabolite pools (in terms of dry weight, ATP requirement, maintenance energy, etc.). This means that evolution does not care as much about metabolite abundance as much as enzyme abundance, and therefore would try to reduce unnecessary fluxes as much as possible. A general strategy in Flux Balance Analysis (FBA) for finding a likely flux solution is to minimize the sum of all fluxes. It is, however, way more difficult to measure fluxes compared to metabolite abundances, since flux is an inherently dynamic property and requires a few assumptions and probing techniques to observe in an essentially static and destructive methods such as MS.
+
+Flux measuring methods can be classified into two main categories: steady-state metabolic flux analysis (MFA) and Dynamic Labeling (DL). Both use stable isotopes in order to translate the dynamic flux property into an static property observable by MS. MFA, on the other hand, uses the underlying structures of specific metabolites and detailed atom-mapping networks to follow specific labeled atoms (usually $^{13}$C atoms) and measure their distribution at balanced growth conditions. Then, these patterns are used to infer flux ratios withing central metabolism and reconstruct the flux map. DL is more straightforward, where the cells are perturbed by adding labeled substrates to the medium at time $t = 0$ and following the change in labeling fractions of downstream metabolites. This method is the focus of this work.
+
+In general, DL can be used both in steady-state or perturbed state. Often, the data is used only in a qualitative manner, e.g. to answer which of a set of possible products gets labeled or the timescale required for the labeling to occur. Converting the data to flux is, however, tricky since it also depends on the intermediate metabolite pool sizes and the combinatorics of multiple inputs and outputs to the pathway. To obtain quantitative results, one would require a kinetic model that could simulate the labeling patterns (by ODE integration) and try to fit that to the measured values. The number of unknown parameters in this case is usually much too large and this approach is very rarely applied.
+
+Here, we only discuss the case of steady-state labeling (which means that all fluxes and metabolite abundances are constant, but the labels are not at steady-state). We show that there is a general solution to the ODE system which does not require any of the kinetic parameters, only the fluxes and metabolite pool sizes. In addition, the ODE system can be solved analytically for some specific cases, and for all others by simple numerical tools. We believe that this solution can greatly accelerate the analysis of many dynamic labeling applications and also show how it can help in fitting experimental data.
+
+
 \section{General solution for dynamic labeling experiments}
 Imagine a general metabolic network, which can be described as a standard graph, i.e. all reactions are one-to-one (typically, metabolic networks for medium size or larger will not qualify here, and it would be necessary to use an atom-mapping network for them).
 
-We assume the system is at metabolic steady state, i.e. therefore all fluxes and pool sizes are constant and given by $v_{i \rightarrow j}$ (the flux from $S_i$ to $S_j$) and $s_i$ (the pool size of $S_i$). We define $v_{i \rightarrow i} = 0$. The labeled fractions are not at steady-state and we aim to describe their time evolution, denoted $f_i(t) \equiv s_i^1(t) / (s_i^0(t) + s_i^1(t)) = s_i^1(t) / s_i$. Note that $s_i$ is not a function of time, since it is assumed to be at steady-state. Then:
+We assume the system is at metabolic steady state, i.e. therefore all fluxes and pool sizes are constant and given by \flux{i}{j} (the flux from $S_i$ to $S_j$) and $s_i$ (the pool size of $S_i$). We define $\flux{i}{j} = 0$. The labeled fractions are not at steady-state and we aim to describe their time evolution, denoted $f_i(t) \equiv s_i^1(t) / (s_i^0(t) + s_i^1(t)) = s_i^1(t) / s_i$. Note that $s_i$ is not a function of time, since it is assumed to be at steady-state. Then:
 \begin{eqnarray}
-    \frac{d s_i^0}{dt} &=& \sum_j f_j~v_{j \rightarrow i} ~~-~~ \sum_j f_i~v_{i \rightarrow j} = \\
-    &=& \sum_j f_j~v_{j \rightarrow i} ~~-~~ f_i \sum_j v_{i \rightarrow j}
+    \frac{d s_i^0}{dt} &=& \sum_j f_j~\flux{j}{i} ~~-~~ \sum_j f_i~\flux{i}{j} = \\
+    &=& \sum_j f_j~\flux{j}{i} ~~-~~ f_i \sum_j \flux{i}{j}
 \end{eqnarray}
 We can divide both sides by $s_i$ to get:
 \begin{eqnarray}
-    \frac{d f_i}{dt} = \sum_j \frac{v_{j \rightarrow i}}{s_i} \cdot f_j ~~-~~ \sum_j \frac{v_{i \rightarrow j}}{s_i} \cdot f_i
+    \frac{d f_i}{dt} = \sum_j \frac{\flux{j}{i}}{s_i} \cdot f_j ~~-~~ \sum_j \frac{\flux{i}{j}}{s_i} \cdot f_i
 \end{eqnarray}
 
 Now, if we rewrite this system of equations in matrix notation, we see that $\vec{f}(t)$ (the vector of all labeled fractions) is described by a homogenous system of first order differential equations:
@@ -46,10 +60,10 @@ Now, if we rewrite this system of equations in matrix notation, we see that $\ve
 \end{eqnarray}
 where $\mathbf{M}$ is a square matrix, defined by:
 \begin{eqnarray}
-    M_{i \neq j} &=& \frac{v_{j \rightarrow i}}{s_i}\\
-    M_{ii} &=& -\frac{1}{s_i}\sum_{j} v_{i \rightarrow j}
+    M_{i \neq j} &=& \frac{\flux{j}{i}}{s_i}\\
+    M_{ii} &=& -\frac{1}{s_i}\sum_{j} \flux{i}{j}
 \end{eqnarray}
-or in other words, if $\mathbf{V}$ is the flux matrix (where $V_{ij} = v_{i \rightarrow j}$) then:
+or in other words, if $\mathbf{V}$ is the flux matrix (where $V_{ij} = \flux{i}{j}$) then:
 \begin{eqnarray}
     \mathbf{M} = \text{diag}(\vec{s})^{-1} \cdot \left( \mathbf{V}^\top - \text{diag}(\mathbf{V}^\top~\vec{1}_n) \right)
 \end{eqnarray}
@@ -64,13 +78,13 @@ which has the general solution:
 \begin{eqnarray}
     \vec{f}(t) = e^{\mathbf{M} t}~\finit =  \mathbf{P}~e^{\mathbf{J}\,t}~\mathbf{P}^{-1}~\finit
 \end{eqnarray}
-where $\mathbf{J}$ is the Jordan normal form of $\mathbf{M}$, i.e. $\mathbf{P}~\mathbf{J}~\mathbf{P}^{-1} = \mathbf{M}$. When $\mathbf{J}$ is a diagonal matrix $\text{diag}\left(\vec{\lambda} \right)$, we can change the multiplication order, so that the formula takes on a simpler form $\vec{f}(t) = \mathbf{A} e^{\vec{\lambda} t}$:
+where $\mathbf{J}$ is the Jordan normal form of $\mathbf{M}$, i.e. $\mathbf{P}~\mathbf{J}~\mathbf{P}^{-1} = \mathbf{M}$. When $\mathbf{J}$ is a diagonal matrix, $\text{diag}(\vec{\lambda})$, we can change the multiplication order, so that the formula takes on a simpler form $\vec{f}(t) = \mathbf{A} e^{\vec{\lambda} t}$:
 \begin{eqnarray}\label{eq:homogenous_solution}
     \vec{f}(t) = \mathbf{P}~ \text{diag}\left(e^{\vec{\lambda} t}\right) ~\mathbf{P}^{-1}~\finit = \mathbf{P}~\text{diag}\left( \mathbf{P}^{-1} ~\finit\right)~ e^{\vec{\lambda} t}\,.
 \end{eqnarray}
 
 \subsection{Example: linear pathway with only irreversible steps}
-Imaging a cascade of reactions which is at steady state, but the fluxes are not necessarily equal (e.g. there could be irreversible branching fluxes that are not considered as part of the system):
+Image a cascade of reactions which is at steady state, but the fluxes are not necessarily equal (e.g. there could be irreversible branching fluxes that are not considered as part of the system):
 \begin{equation}
     \xrightarrow{v_1} S_0 
     \xrightarrow{v_1} S_1 
@@ -97,19 +111,19 @@ At time $t = 0$, the first pool ($S_0$) is replaced with a fully labeled one, wh
   \end{bmatrix}
 \end{eqnarray}
 
-Note that the first row in $\mathbf{M}$ is all zeros since it represents the coefficients of the time derivative of $d f_0/dt$ which is equal to $0$. To describe the solution for this ODE system, we first define $\forall i \neq j:~g_{ij} \equiv (1 - \tau_i/\tau_j)^{-1}$, and $\forall i:~g_{ii} \equiv 1$. The Jordan normal form of $\mathbf{M}$ can be expressed by (we used \href{https://www.sympy.org/}{Sympy} to find it):
+Note that the first row in $\mathbf{M}$ is all zeros since it represents the coefficients of the time derivative of $d f_0/dt$ which is equal to $0$. To describe the solution for this ODE system, we first define $\forall i \neq j:~g_{ij} \equiv (1 - \tau_i/\tau_j)^{-1}$, and $\forall i:~g_{ii} \equiv 1$. We use \href{https://www.sympy.org/}{Sympy} to find the Jordan normal form of $\mathbf{M}$ and $\mathbf{P}^{-1} ~\finit$:
 \begin{eqnarray}
 \mathbf{P} =
   \begin{bmatrix}
     1 & 0 & 0 & \ldots & 0 \\
-    1 & (g_{21}\cdot g_{31} \cdots g_{n1})^{-1} & 0 & \ldots & 0 \\
-    1 & (g_{31}\cdot g_{41} \cdots g_{n1})^{-1} & (g_{32}\cdot g_{42} \cdots g_{n2})^{-1} & \ldots & 0 \\
-    1 & (g_{41}\cdot g_{51} \cdots g_{n1})^{-1} & (g_{42}\cdot g_{52} \cdots g_{n2})^{-1} & \ldots & 0 \\
-    1 & (g_{51}\cdot g_{61} \cdots g_{n1})^{-1} & (g_{52}\cdot g_{62} \cdots g_{n2})^{-1} & \ldots & 0 \\
+    1 & \prod_2^n g_{i1}^{-1} & 0 & \ldots & 0 \\
+    1 & \prod_3^n g_{i1}^{-1} & \prod_3^n g_{i2}^{-1} & \ldots & 0 \\
+    1 & \prod_4^n g_{i1}^{-1} & \prod_4^n g_{i2}^{-1} & \ldots & 0 \\
+    1 & \prod_5^n g_{i1}^{-1} & \prod_5^n g_{i1}^{-1} & \ldots & 0 \\
      & \vdots & & & & \\
     1 & 1 & 1 & \ldots & 1
 \end{bmatrix}
-~~~~
+~~~
 \mathbf{J} =
   \begin{bmatrix}
     0 & 0 & 0 & \ldots & 0 \\
@@ -119,23 +133,19 @@ Note that the first row in $\mathbf{M}$ is all zeros since it represents the coe
      & \vdots & & & & \\
     0 & 0 & 0 & \ldots & -\frac{1}{\tau_n}
 \end{bmatrix}
+~~~
+\mathbf{P}^{-1} ~\finit = 
+	\begin{bmatrix}
+	1 \\
+	-\prod_1^n g_{i1} \\
+	-\prod_1^n g_{i2} \\
+	-\prod_1^n g_{i3} \\
+	-\prod_1^n g_{i4} \\
+	\vdots \\
+	-\prod_1^n g_{in}
+	\end{bmatrix}
 \end{eqnarray}
-
-
-Then, we used \href{https://www.sympy.org/}{Sympy} again to find a general expression for $\mathbf{P}^{-1} ~\finit$:
-\begin{eqnarray}
-    \mathbf{P}^{-1} ~\finit = 
-    \begin{bmatrix}
-        1 \\
-        -\prod_1^n g_{i1} \\
-        -\prod_1^n g_{i2} \\
-        -\prod_1^n g_{i3} \\
-        -\prod_1^n g_{i4} \\
-        \vdots \\
-        -\prod_1^n g_{in}
-    \end{bmatrix}
-\end{eqnarray}
-and if we multiply $\mathbf{P}$ by $\text{diag}\left(\mathbf{P}^{-1}\right)$, we get:
+and therefore the solution for $f(t)$ is:
 \begin{eqnarray}
     f(t) =
     \mathbf{P}~\text{diag}\left(\mathbf{P}^{-1} ~\finit\right)~e^{\vec{\lambda}t} =
@@ -159,7 +169,7 @@ and if we multiply $\mathbf{P}$ by $\text{diag}\left(\mathbf{P}^{-1}\right)$, we
     \end{bmatrix}
 \end{eqnarray}
 
-We can also write this equation in a compact way without matrices:
+We can also write this equation in a compact way without using matrix multiplications:
 \begin{equation}
     f_k(t) = 
     1 - \sum_{j=1}^{k} \left(\prod_{i=1}^{k} g_{ij}\right) e^{- t/\tau_j} = 
@@ -167,34 +177,56 @@ We can also write this equation in a compact way without matrices:
 \end{equation}
 
 \section{Linear irreversible pathway with dilution}\label{sec:linear_examples}
-Assume that the pathway exists inside an exponentially growing cell, all species are at steady state, and that no side fluxes exist besides the growth dilution (which is given by $\mu s_i$). In addition, the final product $S_n$ is a dead-end. The fluxes are thus given by:
+Assume that the pathway exists inside an exponentially growing cell, all species are at steady state, and that no side fluxes exist besides the growth dilution (which is given by $\mu s_i$). In addition, the final product $S_n$ is a dead-end (e.g. it could be a direct constituent of biomass like a membrane lipid). The fluxes are thus given by:
 \begin{equation}
-    v_{(i-1) \rightarrow i} = \mu \sum_{k=i}^n s_k
+    \flux{i-1}{i} = \mu \sum_{k=i}^n s_k
 \end{equation}
 and therefore $\tau_i = s_i/v_i = s_i (\mu \sum_{k=i}^n s_k)^{-1}$. It is convenient to define the relative pool size of $S_i$ compared to all the downstream pool (including $S_i$ itself) as $\phi_i \equiv \mu~\tau_i = s_i / \sum_{k=i}^n s_k$. In this case:
 \begin{equation}\label{eq:dilution}
     f_k(t) = 1 - \sum_{j=1}^{k} \left(\prod_{i = 1, i \neq j}^{k} 1 - \phi_i/\phi_j\right)^{-1} e^{- \mu t / \phi_j}
 \end{equation}
+It is useful to describe the dynamics as a function of the fractional labeling of the total pool without $S_0$, which we denote $f_{tot}$. As we will see, $f_{tot}$ will have a simple dependence on time, and we can use it to replace the time variable for all of the other fractions.
 
-\subsection{Four equal pool sizes}
+\begin{eqnarray}
+	f_{tot} &=& \vec{s}^\top ~ \vec{f} \\
+	\frac{d f_{tot}}{dt} &=& 
+	 \vec{s}^\top ~ \frac{d\vec{f}}{dt} =
+	 \vec{s}^\top ~ M ~ \vec{f} = 
+	 \vec{s}^\top ~ \text{diag}(\vec{s})^{-1} ~ \left( \mathbf{V}^\top - \text{diag}(\mathbf{V}^\top~\vec{1}_n) \right) ~ \vec{f} \nonumber\\
+	 &=& \vec{1}_n^\top~\left( \mathbf{V}^\top - \text{diag}(\mathbf{V}^\top~\vec{1}_n) \right) ~ \vec{f} = 
+	 \vec{1}_n^\top \left(\mathbf{V}^\top - \mathbf{V} \right) \vec{f}
+\end{eqnarray}
+As we know, $\mathbf{V}$ is an off-diagonal matrix (\flux{i}{j} is zero unless $i = j-1$), which means that $\left(\mathbf{V}^\top - \mathbf{V} \right)$ has not more than two non-zero values in each columns and therefore: \footnote{instead of $\vec{s}$ we need to define it without $S_0$, and then the formulae loose the first column, which solves the issue. In addition, we also need to divide everything by the sum of $s_k$, since it is the average not the sum.}
+\begin{eqnarray}
+	\vec{1}_n^\top \left(\mathbf{V}^\top - \mathbf{V} \right) &=& \left[\flux{0}{1}~,~ \flux{1}{2}-\flux{0}{1} ~,~ \flux{2}{3}-\flux{1}{2} ~,~ \ldots~,~ -\flux{n-1}{n} \right] \nonumber\\
+	&=& \left[ \mu \sum_1^n{s_k} ~,~ -\mu s_1 ~,~ -\mu s_2 ~,~ \ldots ~,~ -\mu s_n \right] = -\mu \vec{s}^\top
+\end{eqnarray}
+
+So, finally, we get the formula:
+\begin{eqnarray}
+	\frac{d f_{tot}}{dt} &=& \vec{1}_n^\top \left(\mathbf{V}^\top - \mathbf{V} \right) \vec{f} = -\mu \vec{s}^\top~\vec{f} = -\mu f_{tot} \\
+	f_{tot} &=& 1 - e^{-\mu t} \label{eq:ftot}
+\end{eqnarray}
+
+\subsection{Example: four equal pool sizes}
 In this example, we choose $n = 4$, $\mu = 1$ hour$^{-1}$ and $s_1 = \ldots = s_4$. Then $\phi_i = 1/(5-i)$ and therefore:
 \begin{center}
 \begin{tabular}{cccccc}
-    $f_1$ = & 1 & $- e^{-4t}$ \\
-    $f_2$ = & 1 & $+ 3 e^{-4t}$ & $+ 4 e^{-3t}$ \\
-    $f_3$ = & 1 & $+ 3 e^{-4t}$ & $+ 8 e^{-3t}$ & $- 6 e^{-2t}$ \\
+    $f_1$ = & 1 & $- e^{-4t}$ &&&\\
+    $f_2$ = & 1 & $+ 3 e^{-4t}$ & $- 4 e^{-3t}$ &&\\
+    $f_3$ = & 1 & $+ 3 e^{-4t}$ & $+ 8 e^{-3t}$ & $- 6 e^{-2t}$ &\\
     $f_4$ = & 1 & $- e^{-4t}$   & $- 4 e^{-3t}$ & $+ 6 e^{-2t}$ & $- 4 e^{-t}$
 \end{tabular}
 \end{center}
 
-It is useful to describe the dynamics as a function of the fractional labeling of the total pool ($f_{tot}$), and thus get rid of the time-dependence. To calculate $f_{tot}$ we can use the fact that all intermediate pools are of equal size:
+To calculate $f_{tot}$, we can simply average the four fractions:
 \begin{equation}
-    f_{tot} = \frac{s_1 f_1 + s_2 f_2 + s_3 f_3 + s_4 f_4}{s_1 + s_2 + s_3 + s_4} = \frac{f_1 + f_2 + f_3 + f_4}{4} = e^{-t}
+    f_{tot} = \frac{s_1 f_1 + s_2 f_2 + s_3 f_3 + s_4 f_4}{s_1 + s_2 + s_3 + s_4} = \frac{f_1 + f_2 + f_3 + f_4}{4} = 1 - e^{-t}
 \end{equation}
-
+which matches our general solution for $f_{tot}$ in equation \ref{eq:ftot}. We can now visualize all four fractions and the average $f_{tot}$:
 \begin{center}
 	\begin{tikzpicture}
-	\begin{axis}[width=200pt,axis x line=bottom, axis y line=left, tick align=outside, domain=0:5, xlabel={$t$ [h]}, ylabel={unlabeled fraction}, ymin=0, ymax=1.01, legend pos=south east]
+	\begin{axis}[width=200pt,axis x line=bottom, axis y line=left, tick align=outside, domain=0:5, xlabel={$t$ [h]}, ylabel={labeled fraction}, ymin=0, ymax=1.01, legend pos=south east]
     	\addplot+[mark=none,smooth,thick] (\x,{ 1 - exp(-4*\x) });
     	\addlegendentry{$f_1$}
     	\addplot+[mark=none,smooth,thick] (\x,{ 1 + 3*exp(-4*\x) - 4*exp(-3*\x) });
@@ -432,11 +464,11 @@ In this section, we relax our assumption that all reactions are irreversible, bu
 \end{equation}
 As usual, we assume that the system is at balanced growth, so that the dilution fluxes are proportional to their pool sizes, i.e. $\mu s_i$. So:
 \begin{eqnarray}
-    v_{1 \rightarrow 2} &=& \mu s_2 + v_{2 \rightarrow 1}\\
-    v_{0 \rightarrow 1} &=& \mu (s_1 + s_2)
+    \flux{1}{2} &=& \mu s_2 + \flux{2}{1}\\
+    \flux{0}{1} &=& \mu (s_1 + s_2)
 \end{eqnarray}
 
-For simplicity, we define $x \equiv v_{2 \rightarrow 1} / (\mu s_2)$, therefore:
+For simplicity, we define $x \equiv \flux{2}{1} / (\mu s_2)$, therefore:
 \[\mathbf{V} =
     \begin{bmatrix}
         0 & \mu (s_1 + s_2) & 0\\
