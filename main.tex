@@ -37,8 +37,11 @@ We assume the system is at metabolic steady state, i.e. therefore all fluxes and
 \end{eqnarray}
 We can divide both sides by $s_i$ to get:
 \begin{eqnarray}
-    \frac{d f_i}{dt} = \sum_j \frac{v_{j \rightarrow i}}{s_i} \cdot f_j ~~-~~ \sum_j \frac{v_{i \rightarrow j}}{s_i} \cdot f_i
+    \frac{d f_i}{dt} = 
+    \sum_j \frac{v_{j \rightarrow i}}{s_i} \cdot f_j ~~-~~ \sum_j \frac{v_{i \rightarrow j}}{s_i} \cdot f_i
+    = \sum_j \frac{v_{i \rightarrow j}}{s_i} \cdot f_j ~~-~~ \sum_j \frac{v_{i \rightarrow j}}{s_i} \cdot f_i
 \end{eqnarray}
+where the last step uses the fact that fluxes are at steady state and therefore $\sum_j v_{i \rightarrow j} = \sum_j v_{j \rightarrow i}$.
 
 Now, if we rewrite this system of equations in matrix notation, we see that $\vec{f}(t)$ (the vector of all labeled fractions) is described by a homogenous system of first order differential equations:
 \begin{eqnarray}\label{eq:homogenous}
@@ -47,7 +50,7 @@ Now, if we rewrite this system of equations in matrix notation, we see that $\ve
 where $\mathbf{M}$ is a square matrix, defined by:
 \begin{eqnarray}
     M_{i \neq j} &=& \frac{v_{j \rightarrow i}}{s_i}\\
-    M_{ii} &=& -\frac{1}{s_i}\sum_{j} v_{i \rightarrow j}
+    M_{ii} &=& -\frac{1}{s_i}\sum_{j} v_{j \rightarrow i}
 \end{eqnarray}
 or in other words, if $\mathbf{V}$ is the flux matrix (where $V_{ij} = v_{i \rightarrow j}$) then:
 \begin{eqnarray}
