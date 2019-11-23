@@ -165,7 +165,18 @@ To simplify the solution for this ODE system, we define $\forall i \neq j:~g_{ij
 0 & 0 & 0 & 0 & 0 & \ldots & 1
 \end{bmatrix}
 \end{eqnarray}
-and\[\finit~\mathbf{P} = \left[1 ~~~ -\prod_1^n g_{i1} ~~~ -\prod_1^n g_{i2} ~~~ -\prod_1^n g_{i3} ~~~ \ldots ~~~ -\prod_1^n g_{in} \right]\,.\]
+and
+\begin{equation}
+	\finit~\mathbf{P} = 
+	\begin{bmatrix} 
+		1 & 
+		-\prod_1^n g_{i1} & 
+		-\prod_1^n g_{i2} & 
+		-\prod_1^n g_{i3} & 
+		\ldots & 
+		-\prod_1^n g_{in}
+	\end{bmatrix}
+\end{equation}
 Using these values in Equation \ref{eq:homogenous_solution} yields the following expression:
 \begin{eqnarray}
 	\vec{f}(t) &=& e^{\vec{\lambda} t} ~ \text{diag}\left(\finit~\mathbf{P}\right) ~ \mathbf{P}^{-1} \nonumber\\
@@ -186,6 +197,29 @@ f_i(t) =
 1 - \sum_{j=1}^{i} \left(\prod_{k=1}^{i} g_{kj}\right) e^{- t/\tau_j} = 
 1 - \sum_{j=1}^{i} \left(\prod_{k = 1, k \neq j}^{i} 1 - \tau_k/\tau_j\right)^{-1} e^{- t/\tau_j}
 \end{equation}
+
+\subsection{Non-distinct eigenvalues}\label{sec:equal_taus}
+For our general solution in Equation \ref{eq:lin_path_solution}, we made an important implicit assumption, that none of the $\tau_i$ are equal. If there exist $i \neq j$ where $\tau_i = \tau_j$, then the Jordan normal form would not be a diagonal matrix (and also we would get that $g_{ij} = \infty$). Solving such cases for an arbitrarily large system is not possible. We can, however, solve the most simple case where and $\tau_1 = \tau_2 = \ldots = \tau_n = \tau$.
+
+\begin{eqnarray}
+\mathbf{M} =
+\begin{bmatrix}
+0 & 1/\tau & 0 & 0 & \ldots & 0 & 0\\
+0 & -1/\tau & 1/\tau & 0 & \ldots & 0 & 0\\
+0 & 0 & -1/\tau & 1/\tau & \ldots & 0 & 0\\
+& & & \vdots & & &\\
+0 & 0 & 0 & 0 & \ldots & -1/\tau & 1/\tau\\
+0 & 0 & 0 & 0 & \ldots & 0 & -1/\tau \\
+\end{bmatrix}
+~~~~~
+\finit = \left[1~0~0~\ldots~0\right]\,.
+\end{eqnarray}
+
+In this case, $\mathbf{J}$ is not a diagonal matrix, so we cannot use the simplified solution from Equation \ref{eq:homogenous_solution}. However, SymPy can directly solve the equation, which is turns out to be:
+\begin{eqnarray}\label{eq:equal_tau_solution}
+    f_i(t) = 1 - \left(1 + \sum_{k=1}^i \frac{1}{k!}\left(\frac{t}{\tau}\right)^k \right) e^{-\frac{t}{\tau}}
+\end{eqnarray}
+
 
 \section{Linear irreversible pathway with dilution}\label{sec:linear_examples}
 Assume that the pathway exists inside an exponentially growing cell, all species are at steady state, and that no side fluxes exist besides the growth dilution (which is given by $\flux{i}{\emptyset} = \mu s_i$). In addition, the final product $S_n$ is a dead-end (e.g. it could be a direct constituent of biomass like a membrane lipid). The fluxes are thus given by:
@@ -387,7 +421,7 @@ The function in equation \ref{eq:three_step_f2} is not defined for $\phi_1 = \ph
 	\nonumber\\
 	&=& \frac{1 - (1-\fin)^{1/{\phi_2}} + \phi_2 \cdot \phi_2^{-2} \cdot \ln{(1-\fin)} \cdot(1-\fin)^{1/{\phi_2}}}{1}
 	\nonumber\\
-	&=& 1 - \left(1 - \frac{\ln{(1-\fin)}}{\phi_2} \right) \cdot (1-\fin)^{1/{\phi_2}}
+	&=& 1 - \left(1 - \frac{\ln{(1-\fin)}}{\phi_2} \right) \cdot (1-\fin)^{1/{\phi_2}} \label{eq:equal_phi_solution}
 \end{eqnarray}
 where we used the formula $\frac{\partial a^{f(x)}}{\partial x} = \frac{\partial f}{\partial x}\ln(a) a^{f(x)}$. This is what this function looks like for several values of $\phi_1 = \phi_2 = \phi$:
 \begin{center}
@@ -410,8 +444,16 @@ where we used the formula $\frac{\partial a^{f(x)}}{\partial x} = \frac{\partial
 	\end{tikzpicture}
 \end{center}
 
+Interestingly, we can reach the same solution by using the results from section \ref{sec:equal_taus}. First, since that solution contains $t/\tau$ also outside of the exponents, we need to find its expression as a function of $\fin$ explicitly:
+\begin{eqnarray}
+	\fin &=& 1 - e^{-\mu t} = 1 - e^{-\phi t / \tau} \\
+	e^{-t/\tau} &=& (1 - \fin)^{1/\phi} \\
+	t/\tau &=& -\ln{\left(1 - \fin\right)} / \phi
+\end{eqnarray}
+and if we insert these expressions into Equation \ref{eq:equal_tau_solution} for $i=2$, i.e. $f_2 = 1 - \left(1 + t/\tau \right) e^{-t/\tau}$, we see that it is identical to Equation \ref{eq:equal_phi_solution}.
+
 \subsection{Observability of \texorpdfstring{$\phi_1$}{phi1} and \texorpdfstring{$\phi_2$}{phi2}}
-It is noteworthy, that even though $f_2$ has two degrees of freedom ($\phi_1$ and $\phi_2$), the function is \textit{almost} redundant in parameter space, meaning that the shape of $f_2$ is almost constant if $\phi_1 \cdot \phi_2 =$ const. Below is an example for a range of values, where $\phi_1 \cdot \phi_2 = 0.36$. We also compare that to the limit $\phi_1 = \phi_2 = 0.6$.
+It is noteworthy, that even though $f_2$ has two degrees of freedom ($\phi_1$ and $\phi_2$), the function is \textit{almost} redundant in parameter space, meaning that the shape of $f_2$ is almost constant if $\phi_1 \cdot \phi_2 = \text{const}$. Below is an example for a range of values, where $\phi_1 \cdot \phi_2 = 0.36$. We also compare that to the limit $\phi_1 = \phi_2 = 0.6$.
 
 \begin{center}
 	\begin{tikzpicture}[
