@@ -37,19 +37,23 @@ The internal metabolism of cells has always been a tough nut to crack. Spectrosc
 
 Another complication that makes metabolism difficult to study, is the inconvenient fact that metabolite abundances are usually not the most important phenotype, but rather metabolic flux. Flux is what directs cell resources through different pathways to the target required for cell proliferation (or other factors that affect fitness). Furthermore, the enzymes required to catalyze metabolic reactions are typically more expensive than the intermediates metabolite pools (in terms of dry weight, ATP requirement, maintenance energy, etc.). This means that evolution does not care as much about metabolite abundance as much as enzyme abundance, and therefore would try to reduce unnecessary fluxes as much as possible. A general strategy in Flux Balance Analysis (FBA) for finding a likely flux solution is to minimize the sum of all fluxes. It is, however, way more difficult to measure fluxes compared to metabolite abundances, since flux is an inherently dynamic property and requires a few assumptions and probing techniques to observe in an essentially static and destructive methods such as MS.
 
-Flux measuring methods can be classified into two main categories: steady-state metabolic flux analysis (MFA) and Dynamic Labeling (DL). Both use stable isotopes in order to translate the dynamic flux property into an static property observable by MS. MFA, on the other hand, uses the underlying structures of specific metabolites and detailed atom-mapping networks to follow specific labeled atoms (usually $^{13}$C atoms) and measure their distribution at balanced growth conditions. Then, these patterns are used to infer flux ratios withing central metabolism and reconstruct the flux map. DL is more straightforward, where the cells are perturbed by adding labeled substrates to the medium at time $t = 0$ and following the change in labeling fractions of downstream metabolites. This method is the focus of this work.
+Flux measuring methods can be classified into two main categories: stationary/standard metabolic flux analysis (MFA or stat-MFA) and isotopically non-stationary metabolic flux analysis (abbreviated as INST-MFA \cite{noh_metabolic_2007, jazmin_isotopically_2014}, instat-MFA \cite{heise_flux_2014}, or NMFA\cite{young_elementary_2008, young_inca:_2014}). Both methods introduce a labeled substrate to the media (e.g. $^{13}$C-labeled glucose) and measure the mass isotopomer distributions (MIDs) of certain intracellular metabolites (e.g. amino acids). The main difference is that in standard MFA, measurements are done only after the system has reach isotopic steady state (i.e. the MIDs do not change anymore), while INST-MFA focuses on the transient period right after adding the label to the medium. 
 
-In general, DL can be used both in steady-state or perturbed state. Often, the data is used only in a qualitative manner, e.g. to answer which of a set of possible products gets labeled or the timescale required for the labeling to occur. Converting the data to flux is, however, tricky since it also depends on the intermediate metabolite pool sizes and the combinatorics of multiple inputs and outputs to the pathway. To obtain quantitative results, one would require a kinetic model that could simulate the labeling patterns (by ODE integration) and try to fit that to the measured values. The number of unknown parameters in this case is usually much too large and this approach is very rarely applied.
+In general, INST-MFA can be used either in metabolic steady-state (where all fluxes and pool sizes are constant) or in perturbed state. Often, the data is used only in a qualitative manner, e.g. to answer which of a set of possible products gets labeled or the timescale required for the labeling to occur. Inferring fluxes from such data is, however, tricky since it also depends on the intermediate metabolite pool sizes and all the inputs and outputs to the pathway. Without the metabolic steady-state assumption, one typically has to simulate the labeling trajectories using a full kinetic model and numeric ODE integration.
 
-Here, we only discuss the case of steady-state labeling (which means that all fluxes and metabolite abundances are constant, but the labels are not at steady-state). We show that there is a general solution to the ODE system which does not require any of the kinetic parameters, only the fluxes and metabolite pool sizes. In addition, the ODE system can be solved analytically for some specific cases, and for all others by simple numerical tools. We believe that this solution can greatly accelerate the analysis of many dynamic labeling applications and also show how it can help in fitting experimental data.
-
+Here, we only discuss the case of steady-state labeling. In this case, there is a general solution \cite{young_elementary_2008} which does not require any of the kinetic parameters, only the fluxes and metabolite pool sizes (which are assumed constant). In addition, the ODE system can be solved analytically for some specific cases \cite{sokol_theoretical_2015}, and for all others by simple numerical tools.
 
 \section{General solution for steady state dynamic labeling experiments}
 Imagine a general metabolic network, which can be described as a standard graph, i.e. all reactions are one-to-one (typically, metabolic networks for medium size or larger will not qualify here, and it would be necessary to use an atom-mapping network for them).
 
-We assume the system is at metabolic steady state, i.e. therefore all fluxes and pool sizes are constant and given by \flux{i}{j} (the flux from $S_i$ to $S_j$) and $s_i$ (the pool size of $S_i$). Any system with a non-trivial steady-state must be an open system that dissipates free energy, and must have fluxes that exchange material with the ``outside'', also known as \textit{external} fluxes. We assume that the outside pools are large reservoirs that and that the relatively small fluxes have an negligible effect on them, therefore their concentrations and fractional labeling patterns are at steady-state. In this work, we will always assume that there is a single reservoir that switches from $f=0$ to $f=1$ exactly at time $t=0$ (which we denote $S_0$), and will be the source of all incoming exchange fluxes. Fluxes coming in from $S_0$ will be denoted as $\flux{0}{i}$. In addition, we will assume that all outgoing exchange fluxes are irreversible, and we denote these outgoing fluxes as $\flux{i}{\emptyset}$. Since the system is at steady state, all outgoing fluxes from node $S_i$ must equal all the incoming fluxes:
+We assume the system is at metabolic steady state, i.e. therefore all fluxes and pool sizes are constant and given by \flux{i}{j} (the flux from $S_i$ to $S_j$) and $s_i$ (the pool size of $S_i$). Any system with a non-trivial steady-state must be an open system that dissipates free energy, and must have fluxes that exchange material with the ``outside'', also known as \textit{external} fluxes. For the incoming exchange fluxes, we assume that that the they are irreversible or that the outside pools are large enough, so that and that the relatively small fluxes in our system have negligible effect on them. We represent each one of these exchange reactions by a single function $y_i(t)$ which is the weighted sum of all the labeling fraction of the external pool (weighted by the flux into $S_i$).
+In addition, we will assume that all outgoing exchange fluxes are irreversible, and we denote the total of all these outgoing fluxes as $\flux{i}{\emptyset}$.
+
+[REMOVE THE STEADY STATE AND JUST ADD yi(t) AS A NON-HOMOGENOUS TERM IN THE ODE]
+
+Since the system is at steady state, all outgoing fluxes from node $S_i$ must equal all the incoming fluxes:
 \begin{eqnarray}
-	\forall i > 0: ~~~ \sum_{j=1}^{n} \flux{i}{j} + \flux{i}{\emptyset} ~=~ \sum_{j=0}^{n} \flux{j}{i}
+	\sum_{j=1}^{n} \flux{i}{j} + \flux{i}{\emptyset} ~=~ \sum_{j=1}^{n} \flux{j}{i} + y_i
 \end{eqnarray}
 
 The labeled fractions of the internal pools ($S_1, \ldots S_n$) are not at steady-state and we aim to describe their time evolution, denoted $f_i(t) \equiv s_i^1(t) / (s_i^0(t) + s_i^1(t)) = s_i^1(t) / s_i$. Note that $s_i$ is not a function of time, since it is assumed to be at steady-state. Then:
@@ -199,7 +203,7 @@ f_i(t) =
 \end{equation}
 
 \subsection{Non-distinct eigenvalues}\label{sec:equal_taus}
-For our general solution in Equation \ref{eq:lin_path_solution}, we made an important implicit assumption, that none of the $\tau_i$ are equal. If there exist $i \neq j$ where $\tau_i = \tau_j$, then the Jordan normal form would not be a diagonal matrix (and also we would get that $g_{ij} = \infty$). Solving such cases for an arbitrarily large system is not possible. We can, however, solve the most simple case where and $\tau_1 = \tau_2 = \ldots = \tau_n = \tau$.
+For our general solution in Equation \ref{eq:lin_path_solution}, we made an important implicit assumption, that none of the $\tau_i$ are equal. If there exist $i \neq j$ where $\tau_i = \tau_j$, then the Jordan normal form would not be a diagonal matrix (and also we would get that $g_{ij} = \infty$). Solving all such cases analytically for an arbitrarily large system is not possible. We can, however, solve the most simple case where and $\tau_1 = \tau_2 = \ldots = \tau_n = \tau$. I similar derivation can also be found in \cite{sokol_theoretical_2015}.
 
 \begin{eqnarray}
 \mathbf{M} =
@@ -217,7 +221,7 @@ For our general solution in Equation \ref{eq:lin_path_solution}, we made an impo
 
 In this case, $\mathbf{J}$ is not a diagonal matrix, so we cannot use the simplified solution from Equation \ref{eq:homogenous_solution}. However, SymPy can directly solve the equation, which is turns out to be:
 \begin{eqnarray}\label{eq:equal_tau_solution}
-    f_i(t) = 1 - \left(1 + \sum_{k=1}^i \frac{1}{k!}\left(\frac{t}{\tau}\right)^k \right) e^{-\frac{t}{\tau}}
+    f_i(t) = 1 - e^{-\frac{t}{\tau}}\sum_{k=0}^i \frac{1}{k!}\left(\frac{t}{\tau}\right)^k\,.
 \end{eqnarray}
 
 
@@ -623,5 +627,8 @@ where $\text{diag}(\vec{\lambda})~\mathbf{D} = \mathbf{D}~\text{diag}(\vec{\lamb
     \mathbf{\bar{V}} = \mathbf{M}^\top~\text{diag}(\vec{s}) = \left(\mathbf{A}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1} \right)^\top~\text{diag}(\vec{s})
 \end{eqnarray}
 where $\mathbf{\bar{V}} = \mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V})$, i.e. the fluxes would be the off-diagonal values of $\mathbf{\bar{V}}$.
+
+\bibliographystyle{unsrt}
+\bibliography{references}
 
 \end{document}
