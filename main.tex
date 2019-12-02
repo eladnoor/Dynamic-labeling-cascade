@@ -46,161 +46,131 @@ Here, we only discuss the case of steady-state labeling. In this case, there is 
 \section{General solution for steady state dynamic labeling experiments}
 Imagine a general metabolic network, which can be described as a standard graph, i.e. all reactions are one-to-one (typically, metabolic networks for medium size or larger will not qualify here, and it would be necessary to use an atom-mapping network for them).
 
-We assume the system is at metabolic steady state, i.e. therefore all fluxes and pool sizes are constant and given by \flux{i}{j} (the flux from $S_i$ to $S_j$) and $s_i$ (the pool size of $S_i$). Any system with a non-trivial steady-state must be an open system that dissipates free energy, and must have fluxes that exchange material with the ``outside'', also known as \textit{external} fluxes. For the incoming exchange fluxes, we assume that that the they are irreversible or that the outside pools are large enough, so that and that the relatively small fluxes in our system have negligible effect on them. We represent each one of these exchange reactions by a single function $y_i(t)$ which is the weighted sum of all the labeling fraction of the external pool (weighted by the flux into $S_i$).
-In addition, we will assume that all outgoing exchange fluxes are irreversible, and we denote the total of all these outgoing fluxes as $\flux{i}{\emptyset}$.
+We assume the system is at metabolic steady state, i.e. therefore all fluxes and pool sizes are constant and given by \flux{i}{j} (the flux from $S_i$ to $S_j$) and $s_i$ (the pool size of $S_i$). Any system with a non-trivial steady-state must be an open system that dissipates free energy, and must have fluxes that exchange material with the ``outside'', also known as \textit{external} fluxes. For the incoming exchange fluxes, we assume that that the they are irreversible or that the outside pools are large enough, so that and that the relatively small fluxes in our system have negligible effect on them. We denote the labeled fractions of these external pools by $h_j$ and the irreversible flux from external pool $j$ to $S_i$ by $y_{j \rightarrow i}$. The number of such pools is $m$. Finally, we will assume that all outgoing exchange fluxes are irreversible as well, and denote the total of all these outgoing fluxes from $S_i$ as $\flux{i}{\emptyset}$.
 
-[REMOVE THE STEADY STATE AND JUST ADD yi(t) AS A NON-HOMOGENOUS TERM IN THE ODE]
+The labeled fractions of the internal pools ($S_1, \ldots S_n$) are not at steady-state and we aim to describe their time evolution, denoted $f_i(t) \equiv s_i^1(t) / (s_i^0(t) + s_i^1(t)) = s_i^1(t) / s_i$. Note that one $\vec{f}$ and $\vec{y}$ are time dependent in this system, since fluxes and pool sizes are assumed to be at steady-state. Then:
+\begin{align}
+    s_i \frac{d f_i}{dt} 
+    &= \frac{d s_i^0}{dt}
+    = \sum_{j=1}^{n} f_j\flux{j}{i} + \sum_{j=1}^m h_j y_{j \rightarrow i} - \sum_{j=1}^n f_i \flux{i}{j} - f_i \flux{i}{\emptyset}\nonumber\\
+    &= \sum_{j=1}^{n} f_j\flux{j}{i} + \sum_{j=1}^m h_j y_{j \rightarrow i} - f_i \left( \sum_{j=1}^n \flux{j}{i} + \sum_{j=1}^m y_{j \rightarrow i}\right) \label{eq:steady_state}
+\end{align}
+where we replaced the sum of all the outgoing fluxes with the sum of all incoming fluxes (they are equal due to the steady-state assumption).
 
-Since the system is at steady state, all outgoing fluxes from node $S_i$ must equal all the incoming fluxes:
+This ODE can also be written also in matrix notation, where we use the convention that ($\vec{\cdot}$) represents a row vector.
+\begin{eqnarray}\label{eq:inhom_ode}
+	\frac{d\vec{f}}{dt} &=& \vec{f}~\mathbf{M} + \vec{g}
+\end{eqnarray}
+where $\mathbf{M}$ and $\vec{g}$ are defined as:
 \begin{eqnarray}
-	\sum_{j=1}^{n} \flux{i}{j} + \flux{i}{\emptyset} ~=~ \sum_{j=1}^{n} \flux{j}{i} + y_i
+    \forall i \neq j:& m_{ji} \equiv& \frac{\flux{j}{i}}{s_i} \\
+    \forall i:& m_{ii} \equiv& -\frac{1}{s_i} \left(\sum_{j=1}^n \flux{j}{i} + \sum_{j=1}^m y_{j \rightarrow i} \right)\\
+    \forall i:& g_{i}(t) \equiv& \frac{1}{s_i} \sum_{j=1}^m h_j(t)~y_{j \rightarrow i}
 \end{eqnarray}
 
-The labeled fractions of the internal pools ($S_1, \ldots S_n$) are not at steady-state and we aim to describe their time evolution, denoted $f_i(t) \equiv s_i^1(t) / (s_i^0(t) + s_i^1(t)) = s_i^1(t) / s_i$. Note that $s_i$ is not a function of time, since it is assumed to be at steady-state. Then:
-\begin{eqnarray}
-    \forall i > 0: ~~~ \frac{d s_i^0}{dt}
-    ~=~
-    \sum_{j=0}^{n} f_j~\flux{j}{i} ~-~ f_i \left( \sum_{j=1}^n \flux{i}{j} + \flux{i}{\emptyset} \right)
-    ~=~
-    \sum_{j=0}^{n} f_j~\flux{j}{i} ~-~ f_i \sum_{j=0}^{n} \flux{j}{i}\,.
-\end{eqnarray}
-We now divide both sides of this equation by $s_i$ and get
-\begin{eqnarray}
-\forall i > 0: ~~~ \frac{d f_i}{dt}
-~=~
-\sum_{j=0}^{n} f_j~\frac{\flux{j}{i}}{s_i} ~-~ f_i \sum_{j=0}^{n} \frac{\flux{j}{i}}{s_i} 
-\,.\label{eq:steady_state}
-\end{eqnarray}
-which can be written also in matrix notation, where we use the convention that $\vec{x}$ is a row vector. In addition, we define $\mathbf{V}$ as the flux matrix without the output exchange fluxes. Therefore,
-\begin{eqnarray}
-	\frac{d\vec{f}}{dt} 
-	&=& \vec{f}~\mathbf{V}~\text{diag}(\vec{s})^\top - \vec{f}~\text{diag}(\vec{1}_n \mathbf{V})~\text{diag}(\vec{s})^\top
+\subsection{INST-MFA can be solved as a first order linear inhomogeneous ODE}
+The general solution \cite{young_elementary_2008} for the inhomogeneous first order linear ODE in Equation \ref{eq:inhom_ode} is:
+\begin{eqnarray}\label{eq:inhom_ode_sol}
+    \vec{f}(t) = \vec{f}(0)~e^{\mathbf{M} t} + \int_0^t \vec{g}(\tau) \cdot e^{\mathbf{M} (t-\tau)} d\tau
 \end{eqnarray}
 
-\subsection{Dynamic labeling is a homogeneous linear system of ODEs}
-If we define $\mathbf{M} = \left(\mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V})\right) \text{diag}(\vec{s})^{-1}$, we can see that what we have is a homogeneous linear system of ODEs:
-\begin{eqnarray}\label{eq:homogenous}
-    \frac{d\vec{f}}{d t} &=& \vec{f}~\mathbf{M} \\
-    \vec{f}(0) &=& \finit\,.
-\end{eqnarray}
-Note that the first column of $\mathbf{M}$ will always be a zero vector, since it represents the input and output fluxes going into $S_0$. Since it is a large reservoir, we can assume they are all negligible and therefore $f_0(t) = f^\circ_0$ and $df_0 / dt = 0$.
-
-The general solution for homogeneous linear system of ODEs is given by:
+In most of this manuscript, we will assume that the internal pools start completely unlabeled, i.e. $\vec{f}(0) = \vec{0}$, and so the term before the integral drops out. In addition, we will focus on the case where there is only one external pool, which turns from unlabeled to fully labeled at time $t = 0$. This means that \[\vec{g} = \begin{bmatrix} y_1 / s_1 & y_2 / s_2 & \ldots & y_n / s_n \end{bmatrix},\] where $y_i$ is the flux from the external pool to $S_i$. Since $\vec{g}$ is now constant, the integral in Equation \ref{eq:inhom_ode_sol} can be solved explicitly:
 \begin{eqnarray}
-    \vec{f}(t) = \finit~e^{\mathbf{M} t} =  \finit~\mathbf{P}~e^{\mathbf{J}\,t}~\mathbf{P}^{-1}
+    \vec{f}(t) ~=~ \vec{g} \int_0^t e^{\mathbf{M} (t-\tau)} d\tau ~=~
+    \vec{g} ~ \mathbf{M}^{-1} ~ \left( e^{\mathbf{M}t} - \mathbf{I} \right) =
+    \vec{g} ~ \mathbf{P} ~ \mathbf{J}^{-1} ~ \left( e^{\mathbf{J}t} - \mathbf{I} \right) \mathbf{P}^{-1}
 \end{eqnarray}
-where $\mathbf{J}$ is the Jordan normal form of $\mathbf{M}$, i.e. $\mathbf{P}~\mathbf{J}~\mathbf{P}^{-1} = \mathbf{M}$. When $\mathbf{J}$ is a diagonal matrix, $\text{diag}(\vec{\lambda})$, we can change the multiplication order, so that the formula takes on a simpler form $\vec{f}(t) = e^{\vec{\lambda} t}\mathbf{A}$:
-\begin{eqnarray}\label{eq:homogenous_solution}
-    \vec{f}(t) =
-    \finit~\mathbf{P} ~ \text{diag}\left(e^{\vec{\lambda} t}\right) ~ \mathbf{P}^{-1} =
-    e^{\vec{\lambda} t} ~ \text{diag}\left(\finit~\mathbf{P}\right) ~ \mathbf{P}^{-1}\,.
-\end{eqnarray}
+where in the last step we used the Jordan normal form, i.e. $\mathbf{M} = \mathbf{P} \mathbf{J} \mathbf{P}^{-1}$.
 
-\subsubsection{Defining the internal average labeling fraction}
+\subsubsection{Defining the internal average labeled fraction}
 
-We define $\fin$ as the weighted average of labels among all internal pools excluding $S_0$, namely 
-\begin{eqnarray}
+We define $\fin$ as the weighted average of labels among all internal pools, namely 
+\begin{eqnarray}\label{eq:dfin_dt}
 \fin &\equiv& \frac{\sum_{i=1}^{n} f_i \, s_i}{\sum_{i=1}^{n} s_i}
 \end{eqnarray}
 
-$\fin$ is useful in some experimental setups, where the internal average labeling fraction can be directly measured. For instance, the $^{13}$C fraction of all biomass carbons can be measured by complete oxidation of dry biomass to carbon dioxide (after removing all the externally labeled compounds in the media by separating the supernatant).
+$\fin$ is useful in some experimental setups, where the internal average labeled fraction can be directly measured. For instance, the $^{13}$C fraction of all biomass carbons can be measured by complete oxidation of dry biomass to carbon dioxide (after removing all the externally labeled compounds in the media by separating the supernatant).
 
 To find a description for $\fin$ as a function of time, we first calculate the time derivative:
 \begin{eqnarray}
-\frac{d\fin}{dt} &=& \frac{\sum_{i=1}^{n} \frac{d f_i}{dt} \, s_i}{\sum_{i=1}^{n} s_i} = \frac{\sum_{i=0}^{n} \frac{d f_i}{dt} \, s_i}{\sum_{i=1}^{n} s_i} = \frac{\frac{d\vec{f}}{dt}~ \vec{s}^\top}{\sum_{i=1}^{n} s_i} = \frac{\vec{f}~\mathbf{M}~\vec{s}^\top}{\sum_{i=1}^{n} s_i}
-\end{eqnarray}
-where we could add $i = 0$ to the sum in the first step because we know that $df_0 / dt = 0$. Now, we can use the definition of $\mathbf{M}$ to simplify this expression:
-\begin{eqnarray}
-	\mathbf{M}~\vec{s}^\top &=& \left(\mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V})\right) \text{diag}(\vec{s})^\top~\vec{s}^{-1}
-	= \left(\mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V})\right) \vec{1}_n^\top 
-	= \mathbf{V}~\vec{1}_n^\top - \vec{1}_n~\mathbf{V}\,.
+\frac{d\fin}{dt} &=& \frac{\sum_{i=1}^{n} s_i~\frac{d f_i}{dt}}{\sum_{i=1}^{n} s_i} \,.
 \end{eqnarray}
 
-Now, $\mathbf{V}~\vec{1}_n^\top$ is a vector of the total outgoing fluxes, and $\vec{1}_n~\mathbf{V}$ is a vector of all incoming flux totals. The difference between them are all fluxes that we did not include in $\mathbf{V}$ (since if we included all fluxes, steady state would dictate that these vectors must be equal). Here, the way we defined $\mathbf{V}$ was without the output exchange fluxes, so the total incoming flux for $S_i$ is larger than the total outgoing flux by exactly $\flux{i}{\emptyset}$. The only exception to this is $S_0$ which has no incoming fluxes, but does have outgoing fluxes. We can finally write that:
+Comparing to Equation \ref{eq:steady_state}, we see that the numerator is given by its sum over $i$:
 \begin{eqnarray}
-\frac{d\fin}{dt} &=& \frac{f_0 \sum_{i=1}^{n} \flux{0}{i} - \sum_{i=1}^{n} f_i \flux{i}{\emptyset}}{\sum_{i=1}^{n} s_i} \label{eq:dfin_dt}\,.
+    \sum_{i=1}^{n} s_i~\frac{d f_i}{dt} &=& \sum_{i=1}^n \left(\sum_{j=1}^{n} f_j\flux{j}{i} + \sum_{j=1}^m h_j y_{j \rightarrow i} - \sum_{j=1}^n f_i \flux{i}{j} - f_i \flux{i}{\emptyset}\right) \\
+    &=& \sum_{i,j} f_j\flux{j}{i} - \sum_{i,j} f_i\flux{i}{j} + 
+    \sum_{i=1}^n \sum_{j=1}^m h_j y_{j \rightarrow i} - \sum_{i=1}^n f_i \flux{i}{\emptyset}
+\end{eqnarray}
+where we note that the first two sums cancel each other out. Therefore, the simplified expression for the time derivative of the average labeled fractions is:
+\begin{eqnarray}
+    \frac{d\fin}{dt} &=& \frac{\sum_{i=1}^n \sum_{j=1}^m h_j y_{j \rightarrow i} - \sum_{i=1}^n f_i \flux{i}{\emptyset}}{\sum_{i=1}^{n} s_i}\,.
 \end{eqnarray}
 
 This equation also makes logical sense, since if we consider all internal pools as one big pool, the left term of the numerator represents the total amount of label coming into it per time, and the right term is the label leaving the system. The denominator is the total internal pool size.
 
 \subsection{Example: linear pathway with only irreversible steps}
-Image a cascade of reactions which is at steady state, but the fluxes are not necessarily equal (e.g. there could be irreversible branching fluxes):
+Imagine a cascade of reactions which is at steady state, but the fluxes are not necessarily equal (e.g. there could be irreversible branching fluxes):
 \begin{equation}
-    \underset{\downarrow}{S_0} 
     \xrightarrow{v_1} \underset{\downarrow}{S_1} 
     \xrightarrow{v_2} \underset{\downarrow}{S_2}
     \xrightarrow{v_3} \ldots 
     \xrightarrow{v_n} \underset{\downarrow}{S_n}
 \end{equation}
-At time $t = 0$, the first pool ($S_0$) is replaced with a fully labeled one, while all downstream pools start completely unlabeled. In addition, we define $\tau_i \equiv \frac{s_i}{v_i}$. The system is therefore described by:
+We define $\tau_i \equiv \frac{s_i}{v_i}$ in order to reduce the number of parameters. The system is therefore described by:
 \begin{eqnarray}
 \mathbf{M} =
   \begin{bmatrix}
-    0 & 1/\tau_1 & 0 & 0 & \ldots & 0 & 0\\
-    0 & -1/\tau_1 & 1/\tau_2 & 0 & \ldots & 0 & 0\\
-    0 & 0 & -1/\tau_2 & 1/\tau_3 & \ldots & 0 & 0\\
-    0 & 0 & 0 & -1/\tau_3 & \ldots & 0 & 0\\
-    & & & \vdots & & &\\
-    0 & 0 & 0 & 0 & \ldots & 0 & -1/\tau_n \\
+    -1/\tau_1 & 1/\tau_2 & 0 & \ldots & 0 & 0\\
+    0 & -1/\tau_2 & 1/\tau_3 & \ldots & 0 & 0\\
+    0 & 0 & -1/\tau_3 & \ldots & 0 & 0\\
+    \vdots\\
+    0 & 0 & 0 & \ldots & 0 & -1/\tau_n
   \end{bmatrix}
 ~~~~~
-\finit = \left[1~0~0~\ldots~0\right]\,.
+\vec{g} = \left[1/\tau_1~0~0~\ldots~0\right]\,.
 \end{eqnarray}
 
-To simplify the solution for this ODE system, we define $\forall i \neq j:~g_{ij} \equiv (1 - \tau_i/\tau_j)^{-1}$, and $\forall i:~g_{ii} \equiv 1$. We use \href{https://www.sympy.org/}{Sympy} to find the Jordan normal form of $\mathbf{M}$:
-\begin{eqnarray}
-\mathbf{J} =
-  \begin{bmatrix}
-    0 & 0 & 0 & \ldots & 0 \\
-    0 & -\frac{1}{\tau_1} & 0 & \ldots & 0 \\
-    0 & 0 & -\frac{1}{\tau_2} & \ldots & 0 \\
-    0 & 0 & 0 & \ldots & 0 \\
-     & \vdots & & & & \\
-    0 & 0 & 0 & \ldots & -\frac{1}{\tau_n}
-\end{bmatrix}
-~~~
-\mathbf{P^{-1}} =
+We note that as $\mathbf{M}$ is triangular, its Jordan normal form is a diagonal matrix. Therefore, we can write $\mathbf{M} = \mathbf{P} \mathbf{D} \mathbf{P}^{-1}$, where $\mathbf{D}$ has the same values as the diagonal values of $\mathbf{M}$ (assuming they are distinct -- we discuss other cases in the next section). To simplify the solution for this ODE system, we define $\forall i \neq j:~q_{ij} \equiv (1 - \tau_i/\tau_j)^{-1}$, and $\forall i:~q_{ii} \equiv 1$, and use \href{https://www.sympy.org/}{Sympy} to find the Jordam normal form and calculate:
+\[
+\mathbf{P}^{-1} =
 \begin{bmatrix}
-1 & 1 & 1 & 1 & 1 & \ldots & 1 \\
-0 & 1 & \prod_{i=1}^2 g_{i1} & \prod_{i=1}^3 g_{i1} & \prod_{i=1}^4 g_{i1} & \ldots & \prod_{i=1}^n g_{i1} \\
-0 & 0 & 1 & \prod_{i=2}^3 g_{i2} & \prod_{i=2}^4 g_{i2} & \ldots & \prod_{i=2}^n g_{i2} \\
-0 & 0 & 0 & 1 & \prod_{i=3}^4 g_{i3} & \ldots & \prod_{i=3}^n g_{i3} \\
-& \vdots & & & & & \\
-0 & 0 & 0 & 0 & 0 & \ldots & 1
+1 & \prod_{2}^2 q_{i1} & \prod_{2}^3 q_{i1} & \ldots & \prod_{2}^n q_{i1} \\
+0 & 1 & \prod_{3}^3 q_{i2} & \ldots & \prod_{3}^n q_{i2} \\
+0 & 0 & 1 & \ldots & \prod_{4}^n q_{i3} \\
+\vdots\\
+0 & 0 & 0 & \ldots & 1
 \end{bmatrix}
-\end{eqnarray}
-and
-\begin{equation}
-	\finit~\mathbf{P} = 
-	\begin{bmatrix} 
-		1 & 
-		-\prod_1^n g_{i1} & 
-		-\prod_1^n g_{i2} & 
-		-\prod_1^n g_{i3} & 
-		\ldots & 
-		-\prod_1^n g_{in}
-	\end{bmatrix}
-\end{equation}
-Using these values in Equation \ref{eq:homogenous_solution} yields the following expression:
-\begin{eqnarray}
-	\vec{f}(t) &=& e^{\vec{\lambda} t} ~ \text{diag}\left(\finit~\mathbf{P}\right) ~ \mathbf{P}^{-1} \nonumber\\
-	&=&
-	\left[ 1 ~~ e^{-\frac{t}{\tau_1}} ~~ e^{-\frac{t}{\tau_2}} ~~ \ldots ~~ e^{-\frac{t}{\tau_n}}\right]
+\]
+and:
+\[
+    \vec{g}~\mathbf{P}~\mathbf{J}^{-1}~\left( e^{\mathbf{J} t} - \mathbf{I} \right)
+    =
     \begin{bmatrix}
-        1 & 1 & 1 & 1 & \ldots & 1 \\ \\
-        0 & -\prod_1^1 g_{i1} & -\prod_1^2 g_{i1} & -\prod_1^3 g_{i1}  & \ldots & -\prod_1^n g_{i1} \\ \\
-        0 & 0 & -\prod_1^2 g_{i2} & -\prod_1^3 g_{i2} & \ldots & -\prod_1^n g_{i2} \\
-         & \vdots & & & & \\
-        0 & 0 & 0 & 0 & \ldots & -\prod_1^n g_{in}
+        (1 - e^{-t/\tau_1})\prod_{1}^1 q_{i1} & (e^{-t/\tau_2}-1) \prod_{1}^2 q_{i2} & \ldots & (e^{-t/\tau_n}-1) \prod_{1}^n q_{in}
+    \end{bmatrix}.
+\]
+
+Using these results in Equation \ref{eq:inhom_ode_sol} yields the following expression (where we move the $q$ products from the vector to the matrix on the right):
+\begin{eqnarray}
+	\vec{f}(t) ~=~
+    \begin{bmatrix}
+        1 - e^{-t/\tau_1} & e^{-t/\tau_2}-1 & \ldots & e^{-t/\tau_n}-1
+    \end{bmatrix}
+    \begin{bmatrix}
+        \prod_1^1 q_{i1} & \prod_1^2 q_{i1} & \prod_1^3 q_{i1}  & \ldots & \prod_1^n q_{i1} \\ \\
+        0 & \prod_1^2 q_{i2} & \prod_1^3 q_{i2} & \ldots & \prod_1^n q_{i2} \\
+        \vdots\\
+        0 & 0 & 0 & \ldots & \prod_1^n q_{in}
     \end{bmatrix}\label{eq:lin_path_solution}
 \end{eqnarray}
 
 We can also write this equation in a compact way without using matrix multiplications:
-\begin{equation}
-f_i(t) = 
-1 - \sum_{j=1}^{i} \left(\prod_{k=1}^{i} g_{kj}\right) e^{- t/\tau_j} = 
-1 - \sum_{j=1}^{i} \left(\prod_{k = 1, k \neq j}^{i} 1 - \tau_k/\tau_j\right)^{-1} e^{- t/\tau_j}
-\end{equation}
+\begin{eqnarray}
+f_i(t) &=& 
+    \left(\prod_{k=1}^i q_{k1}\right) (1 - e^{-t/\tau_1}) ~+~
+    \sum_{j=2}^i \left(\prod_{k=1}^i q_{kj}\right) (e^{-t/\tau_j} - 1)
+\end{eqnarray}
 
 \subsection{Non-distinct eigenvalues}\label{sec:equal_taus}
 For our general solution in Equation \ref{eq:lin_path_solution}, we made an important implicit assumption, that none of the $\tau_i$ are equal. If there exist $i \neq j$ where $\tau_i = \tau_j$, then the Jordan normal form would not be a diagonal matrix (and also we would get that $g_{ij} = \infty$). Solving all such cases analytically for an arbitrarily large system is not possible. We can, however, solve the most simple case where and $\tau_1 = \tau_2 = \ldots = \tau_n = \tau$. I similar derivation can also be found in \cite{sokol_theoretical_2015}.
@@ -208,22 +178,20 @@ For our general solution in Equation \ref{eq:lin_path_solution}, we made an impo
 \begin{eqnarray}
 \mathbf{M} =
 \begin{bmatrix}
-0 & 1/\tau & 0 & 0 & \ldots & 0 & 0\\
-0 & -1/\tau & 1/\tau & 0 & \ldots & 0 & 0\\
-0 & 0 & -1/\tau & 1/\tau & \ldots & 0 & 0\\
-& & & \vdots & & &\\
-0 & 0 & 0 & 0 & \ldots & -1/\tau & 1/\tau\\
-0 & 0 & 0 & 0 & \ldots & 0 & -1/\tau \\
+-1/\tau & 1/\tau & 0 & \ldots & 0 & 0\\
+0 & -1/\tau & 1/\tau & \ldots & 0 & 0\\
+\vdots\\
+0 & 0 & 0 & \ldots & -1/\tau & 1/\tau\\
+0 & 0 & 0 & \ldots & 0 & -1/\tau \\
 \end{bmatrix}
 ~~~~~
-\finit = \left[1~0~0~\ldots~0\right]\,.
+\vec{g} = \left[1/\tau~0~0~\ldots~0\right]\,.
 \end{eqnarray}
 
-In this case, $\mathbf{J}$ is not a diagonal matrix, so we cannot use the simplified solution from Equation \ref{eq:homogenous_solution}. However, SymPy can directly solve the equation, which is turns out to be:
+In this case, $\mathbf{J}$ is not a diagonal matrix, which makes the matrix solution seem a bit more complicated. However, SymPy can directly solve the equation, which is turns out to be:
 \begin{eqnarray}\label{eq:equal_tau_solution}
-    f_i(t) = 1 - e^{-\frac{t}{\tau}}\sum_{k=0}^i \frac{1}{k!}\left(\frac{t}{\tau}\right)^k\,.
+    f_i(t) = 1 - e^{-\frac{t}{\tau}}\sum_{k=0}^{i-1} \frac{1}{k!}\left(\frac{t}{\tau}\right)^k\,.
 \end{eqnarray}
-
 
 \section{Linear irreversible pathway with dilution}\label{sec:linear_examples}
 Assume that the pathway exists inside an exponentially growing cell, all species are at steady state, and that no side fluxes exist besides the growth dilution (which is given by $\flux{i}{\emptyset} = \mu s_i$). In addition, the final product $S_n$ is a dead-end (e.g. it could be a direct constituent of biomass like a membrane lipid). The fluxes are thus given by:
@@ -235,13 +203,19 @@ and therefore $\tau_i = s_i/v_i = s_i (\mu \sum_{k=i}^n s_k)^{-1}$. It is conven
     f_i(t) = 1 - \sum_{j=1}^{i} \left(\prod_{k = 1, i \neq j}^{i} 1 - \phi_k/\phi_j\right)^{-1} e^{- \mu t / \phi_j}
 \end{equation}
 
-Now, we can also calculate $\fin$ as a function of time, by plugging these values into Equation \ref{eq:dfin_dt}:
+There is only one input flux, going into $S_1$, i.e. $y_{1 \rightarrow 1} = \mu \sum s_i$. We assume it is fully labeled, so $h_1 = 1$. We can now calculate $\fin$ as a function of time, by plugging these values into Equation \ref{eq:dfin_dt}:
 \begin{eqnarray}
-	\frac{d\fin}{dt} = \frac{f_0 \sum_{i=1}^{n} \flux{0}{i} - \sum_{i=1}^{n} f_i \flux{i}{\emptyset}}{\sum_{i=1}^{n} s_i}
-	= \frac{f_0 \mu \sum_{i=1}^{n} s_i - \sum_{i=1}^{n} f_i \mu s_i }{\sum_{i=1}^{n} s_i} 
-	= \mu~\frac{f_0 - \sum_{i=1}^{n} f_i s_i }{\sum_{i=1}^{n} s_i} = \mu \left(f_0 - \fin\right)
+	\frac{d\fin}{dt}
+	= 
+	\frac{\sum_{i=1}^n \sum_{j=1}^m h_j y_{j \rightarrow i} - \sum_{i=1}^n f_i \flux{i}{\emptyset}}{\sum_{i=1}^{n} s_i} 
+	=
+	\frac{\mu \sum_{i=1}^{n} s_i - \sum_{i=1}^{n} f_i \mu s_i }{\sum_{i=1}^{n} s_i}
+	=
+	\mu \frac{\sum_{i=1}^{n} s_i - \sum_{i=1}^{n} f_i s_i }{\sum_{i=1}^{n} s_i}
+	=
+    \mu \left(1 - \fin\right)
 \end{eqnarray}
-Since $f_0 = 1$ and $\fin(0) = 0$, the solution is a simple exponent:
+Since $\fin(0) = 0$, the solution is:
 \begin{eqnarray}
 	\fin = 1 - e^{-\mu\,t} \label{eq:fin_dilution}
 \end{eqnarray}
@@ -289,7 +263,7 @@ So, we can use the general solution from equation \ref{eq:dilution}, where $\phi
     f_1 &=& 1 - e^{- \mu t / \phi_1} \\
     f_2 &=& 1 - \left(1 - 1 / \phi_1 \right)^{-1} e^{- \mu t / \phi_1} - \left(1 - \phi_1 \right)^{-1} e^{- \mu t}
 \end{eqnarray}
-We can now rewrite $f_2$ as a function of $f_1$ and thus get rid of $t$:
+To We can now rewrite $f_2$ as a function of $f_1$ and thus get rid of $t$:
 \begin{eqnarray}
     f_2 &=& 1 + \frac{\phi_1}{1-\phi_1} (1 - f_1) - \frac{1}{1-\phi_1} (1 - f_1)^{\phi_1}
 \end{eqnarray}
@@ -506,81 +480,85 @@ In this section, we relax our assumption that all reactions are irreversible, bu
 \subsection{2-step assembly with reversibility}
 
 \begin{equation}
-    \rightarrow S_0 
-    \rightarrow \underset{\downarrow}{S_1}
+    \overset{y}{\rightarrow} \underset{\downarrow}{S_1}
     \rightleftarrows \underset{\downarrow}{S_2}
 \end{equation}
 As before, we assume that the system is at balanced growth, so that the dilution fluxes are proportional to their pool sizes, i.e. $\mu s_i$. So:
 \begin{eqnarray}
-    \flux{1}{2} &=& \mu s_2 + \flux{2}{1}\\
-    \flux{0}{1} &=& \mu (s_1 + s_2)
+    y &=& \mu (s_1 + s_2)\\
+    \flux{1}{2} &=& \mu s_2 + \flux{2}{1}
 \end{eqnarray}
 
 For simplicity, we define $x \equiv \flux{2}{1} / (\mu s_2)$, therefore:
-\[\mathbf{V} =
-    \begin{bmatrix}
-        0 & \mu (s_1 + s_2) & 0\\
-        0 & 0 & \mu s_2 (1 + x) \\
-        0 & \mu s_2 x & 0
-    \end{bmatrix}
-\]
+\begin{align*}
+    g_1 &= y/s_1 = \mu(1 + s_2/s_1)\\
+    m_{11} &= -(\flux{2}{1} + y)/s_1 = -(\mu s_2 x + \mu s_1 + \mu s_2)/s_1 = 
+    \mu ( -1 - (1 + x) s_2/s_1)\\
+    m_{12} &= \flux{1}{2} / s_2 = (\mu s_2 + \mu s_2 x) / s_2 = 1 + x\\
+    m_{21} &= \flux{2}{1} / s_1 = (\mu s_2 x) / s_1 = x s_2 / s_1\\
+    m_{22} &= -(\flux{1}{2})/s_2 = -m_{12} = -1-x
+\end{align*}
 
-The we use the formula $\mathbf{M} = \left(\mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V})\right) \text{diag}(\vec{s})^{-1}$ to get
-
-\[
-\mathbf{M} = \mu \cdot 
-    \begin{bmatrix}
-        0 & 1 + s_2/s_1 & 0  \\
-        0 & - 1 - (1+x) s_2 / s_1 & 1+x \\
-        0 & x s_2 / s_1 & -1-x
-    \end{bmatrix}
-\]
-As before, we can reduce the number of parameters by setting $\phi_1 \equiv \frac{s_1}{s_1+s_2}$:
-\[
-\mathbf{M} = \mu \cdot 
-    \begin{bmatrix}
-        0 & 1/\phi_1 & 0  \\
-        0 & - 1 - (1+x)(1/\phi_1-1) & 1+x \\
-        0 &  x (1/\phi_1-1) & -1-x
-    \end{bmatrix}
-\]
-and then find the Jordan normal form for $\mathbf{M}$ with \href{https://www.sympy.org/}{Sympy} and using our general solution:
+We can reduce the number of parameters further by setting $\phi \equiv \frac{s_1}{s_1+s_2}$:
 \begin{eqnarray}
-\mathbf{J} = \mu \cdot
-  \begin{bmatrix}
-    0 & 0 & 0 \\
-    0 & -\frac{x+1}{\phi_1} & 0 \\
-    0 & 0 & -1
-\end{bmatrix}
+\mathbf{M} = \mu \cdot 
+    \begin{bmatrix}
+        - 1 - (1+x)(1/\phi-1) & 1+x \\
+        x (1/\phi-1) & -1-x
+    \end{bmatrix}
 ~~~~
-\text{diag}\left(\finit~\mathbf{P}\right)~\mathbf{P^{-1}} =
+\vec{g} = \mu \begin{bmatrix} 1/\phi & 0 & \ldots & 0 \end{bmatrix}
+\end{eqnarray}
+finding the Jordan normal form for $\mathbf{M}$ with \href{https://www.sympy.org/}{Sympy} and calculating:
+\begin{eqnarray}
+\vec{g}~\mathbf{P}~\mathbf{J}^{-1} = 
     \begin{bmatrix}
-        1 & 1 & 1 \\
-        0 & \frac{\phi_1 - 1}{x + 1 - \phi_1} & \frac{\phi_1}{x + 1 - \phi_1} \\
-        0 & -\frac{x}{x + 1 - \phi_1} & -\frac{x+1}{x + 1 - \phi_1} 
+        -\frac{1}{1-\phi} & \frac{1}{x}
     \end{bmatrix}
-\end{eqnarray}
-We can continue to simplify this expression by defining $\phi_1' \equiv \phi_1/(1+x)$ and get the following:
-\begin{eqnarray}
-    f(t) = e^{\mathbf{J}t}~\text{diag}\left(\finit~\mathbf{P}\right)~\mathbf{P^{-1}} = 
+~~~
+e^{\mathbf{J} t} =
     \begin{bmatrix}
-		1 & e^{-\mu\,t / \phi_1'} & e^{-\mu\,t}
+        e^{-\mu t} & 0 \\
+        0 & e^{-\mu t (x+1)/\phi}
+    \end{bmatrix}
+~~~
+\mathbf{P}^{-1} = 
+    \begin{bmatrix}
+		-\frac{x(\phi-1)}{x + 1 - \phi} & \frac{(1-\phi)(x+1)}{x + 1 - \phi} \\
+		\frac{x(\phi-1)}{x + 1 - \phi} & \frac{\phi~x}{x + 1 - \phi} 
+	\end{bmatrix}
+\end{eqnarray}
+which are combined to give the solution:
+\begin{eqnarray}
+    f(t) = 
+    \vec{g} ~ \mathbf{P} ~ \mathbf{J}^{-1} ~ \left( e^{\mathbf{J t}} - \mathbf{I} \right) \mathbf{P}^{-1}
+    = 
+    \begin{bmatrix}
+		\frac{1-e^{-\mu t}}{1-\phi} &
+		-\frac{1 - e^{-\mu t (x+1)/\phi}}{x}
 	\end{bmatrix}
     \begin{bmatrix}
-		1 & 1 & 1 \\
-		0 & \frac{\phi_1 - 1}{x + 1 - \phi_1} & \frac{\phi_1}{x + 1 - \phi_1} \\
-		0 & -\frac{x}{x + 1 - \phi_1} & -\frac{x+1}{x + 1 - \phi_1} 
+		\frac{x(1-\phi)}{x + 1 - \phi} & \frac{(1-\phi)(x+1)}{x + 1 - \phi} \\
+		-\frac{x(1-\phi)}{x + 1 - \phi} & \frac{\phi~x}{x + 1 - \phi} 
 	\end{bmatrix}
 \end{eqnarray}
-
-And focusing only on $f_2(t)$ we get this final expression
+If we focus only on $f_2(t)$:
 \begin{eqnarray}
-    f_2 ~=~ 1 + \frac{\phi_1'}{1 - \phi_1'} (1-\fin)^{1/\phi_1'} ~-~ \frac{1}{1 - \phi_1'} (1-\fin)
-	\label{eq:two_step_reversible}
+    f_2 &=& 
+    \frac{x+1}{x+1-\phi} (1 - e^{-\mu t}) -
+    \frac{\phi}{x+1-\phi}(1 - e^{-\mu t (x+1)/\phi})\\
+    &=&
+    1 - \frac{x+1}{x+1-\phi} e^{-\mu t} - 
+    \frac{\phi}{x+1-\phi} e^{-\mu t (x+1)/\phi}
 \end{eqnarray}
-where again we substituted $e^{-\mu\,t}$ with $1-\fin$. Note that the derivation for Equation \ref{eq:fin_dilution} is valid also in this system where fluxes are not irreversible, since we did not change the values of the exchange fluxes.
+and make two substitutions: $\phi' \equiv \phi/(1+x)$ and $e^{-\mu t} = 1 - \fin$. Note that the derivation of $\fin$ in Equation \ref{eq:fin_dilution} is valid also in this system where internal fluxes are not irreversible, since it only depends on the exchange fluxes. Finally, we get:
+\begin{eqnarray}
+    f_2 ~=~ 
+    1 + \frac{1}{1-\phi'} (1-\fin) + \frac{\phi'}{1-\phi'} (1-\fin)^{1/\phi'}
+	\label{eq:two_step_reversible}\,.
+\end{eqnarray}
 
-Equation \ref{eq:two_step_reversible} is identical to the solution for $f_2$ in the 2-step irreversible model (Equation \ref{eq:two_step_f2_vs_ftot}), except that $\phi_1'$ replaces $\phi_1$. That means that for any $x > 0$, we will be able to fit $f_2$ as a function of $\fin$ precisely also with an irreversible model, and the precursor pool $\phi_1$ will be underestimated by a factor of $1+x$.
+Equation \ref{eq:two_step_reversible} is identical to the solution for $f_2$ in the 2-step irreversible model (Equation \ref{eq:two_step_f2_vs_ftot}), except that $\phi'$ replaces $\phi_1$. That means that for any $x > 0$, we will be able to fit $f_2$ as a function of $\fin$ precisely also with an irreversible model, and the precursor pool $\phi_1$ will be underestimated by a factor of $1+x$.
 
 \subsection{Analytical solution for maturation time}
 We define the maturation time $t_{1/2}$ as the time after which a protein that starts in $S_1$ to have a 50\% chance of reaching $S_2$. 
@@ -616,7 +594,7 @@ The common scenario would be that $\tau_i$ are unknown, and we have several time
 
 \subsection{How to infer fluxes from labeling data}
 
-We assume that the data was generated from a system such as in equation \ref{eq:homogenous}, with a diagonalizable matrix $\mathbf{M}$. Then, we can fit our data (which is $\vec{f}$ measured at multiple time points) using the formula $\vec{f}(t) = \mathbf{A} e^{\vec{\lambda} t}$. Then, from equation \ref{eq:homogenous_solution} we know that $\mathbf{P} = \mathbf{A} \mathbf{D}^{-1}$, where $\mathbf{D}$ is some fully ranked diagonal matrix. Even though $\mathbf{D}$ is somehow dependent on $\mathbf{P}$ and $\mathbf{A}$, it wouldn't matter for finding $\mathbf{M}$, since:
+We assume that the data was generated from a system such as in equation \ref{eq:inhom_ode}, with a diagonalizable matrix $\mathbf{M}$. Then, we can fit our data (which is $\vec{f}$ measured at multiple time points) using the formula $\vec{f}(t) = \mathbf{A} e^{\vec{\lambda} t}$. Then, from equation \ref{eq:inhom_ode_sol} we know that $\mathbf{P} = \mathbf{A} \mathbf{D}^{-1}$, where $\mathbf{D}$ is some fully ranked diagonal matrix. Even though $\mathbf{D}$ is somehow dependent on $\mathbf{P}$ and $\mathbf{A}$, it wouldn't matter for finding $\mathbf{M}$, since:
 \begin{eqnarray}
     \mathbf{M} = \mathbf{P}~\text{diag}(\vec{\lambda})~\mathbf{P}^{-1} = \mathbf{A}\mathbf{D}^{-1}~\text{diag}(\vec{\lambda})~\mathbf{D}\mathbf{A}^{-1} = 
     \mathbf{A}\mathbf{D}^{-1}\mathbf{D}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1} = 
@@ -627,6 +605,50 @@ where $\text{diag}(\vec{\lambda})~\mathbf{D} = \mathbf{D}~\text{diag}(\vec{\lamb
     \mathbf{\bar{V}} = \mathbf{M}^\top~\text{diag}(\vec{s}) = \left(\mathbf{A}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1} \right)^\top~\text{diag}(\vec{s})
 \end{eqnarray}
 where $\mathbf{\bar{V}} = \mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V})$, i.e. the fluxes would be the off-diagonal values of $\mathbf{\bar{V}}$.
+
+\section{Layers}
+What if $\vec{g}(t)$ is not constant. If we know that it is itself generated by a (in)homogeneous linear ODE system, we can safely assume it can be described by a series of exponents:
+\begin{eqnarray}
+    \vec{g}(t) = \vec{\alpha} e^{\mathbf{G} t} + \vec{\beta}
+\end{eqnarray}
+for some $\vec{\beta} \in \mathbb{R}^n$ and $\mathbf{G} \in \mathbb{R}^{n \times n}$. Note that we can use zero padding ensure that the size of $\vec{\beta}$ and $\mathbf{G}$ match the number of internal pools. Now, we can solve Equation \ref{eq:inhom_ode_sol} for cases where $\vec{g}$ is not constant:
+\begin{eqnarray}
+    \vec{f}(t) &=&
+    \vec{f}(0)~e^{\mathbf{M} t} ~+~ \int_0^t \left(\vec{\alpha} e^{\mathbf{G} \tau} + \vec{\beta}\right) e^{\mathbf{M} (t-\tau)} d\tau \nonumber\\
+    &=&
+    \vec{f}(0)~e^{\mathbf{M} t} ~+~ \left[
+    \vec{\alpha} \int_0^t e^{(\mathbf{G} - \mathbf{M})\tau} d\tau ~+~ 
+    \vec{\beta} \int_0^t e^{-\mathbf{M}\tau} d\tau 
+    \right] e^{\mathbf{M} t} \nonumber\\
+    &=& 
+    \vec{f}(0)~e^{\mathbf{M} t} ~+~ \left[
+    \vec{\alpha}~(\mathbf{G}-\mathbf{M})^{-1}~(e^{(\mathbf{G} - \mathbf{M})t} - \mathbf{I}) ~-~ 
+    \vec{\beta}~\mathbf{M}^{-1}~(e^{-\mathbf{M}t} - \mathbf{I})
+    \right] e^{\mathbf{M} t} \nonumber\\
+    &=&
+    \vec{f}(0)~e^{\mathbf{M} t} ~+~
+    \vec{\alpha}~(\mathbf{G}-\mathbf{M})^{-1}~(e^{\mathbf{G}t} - e^{\mathbf{M}t}) ~+~ 
+    \vec{\beta}~\mathbf{M}^{-1}~(e^{\mathbf{M} t} - \mathbf{I})
+    \label{eq:non_constant_g}
+\end{eqnarray}
+where we can see that the time independent part ($\vec{\beta}$) is the same as in our previous solution.
+
+Therefore, if we separate the ODE system into layers where information only flows from top layers to lower ones, we can iteratively solve the ODE system in smaller chunks, rather then all at once. This could significantly accelerate the computation time \cite{young_elementary_2008}.
+
+\subsection{Example: 2-step irreversible pathway}
+Just to demonstrate how the layers work, we focus again on the 2-step irreversible pathway. We will start by using the solution for the first pool which is $h_1(t) = 1 - e^{-t/\tau_1}$ and show how we can use Equation \ref{eq:non_constant_g} to solve $f_2(t)$.
+
+We start by describing the exchange function:
+\begin{eqnarray}
+    \vec{g}(t) = h_1(t) \frac{v_{1 \rightarrow 2}}{s_2} = (1 - e^{-t/\tau_1}) \frac{1}{\tau_2}
+\end{eqnarray}
+which means that $\vec{\alpha} = [-1/\tau_2]$, $\beta = [1/\tau_2]$ and $\mathbf{G} = [-1/\tau_1]$. The internal matrix is given by $\mathbf{M} = [-1/\tau_2]$. Using these values in Equation \ref{eq:non_constant_g} we get:
+\begin{eqnarray}
+    \vec{f}(t) &=& (-1/\tau_2) (-1/\tau_1 + 1/\tau_2)^{-1} (e^{-t/\tau_1} - e^{-t/\tau_2}) + (1/\tau_2) (-1/\tau_2)^{-1} (e^{-t/\tau_2} - 1) \nonumber\\
+    &=& \frac{-\tau_1}{\tau_1 - \tau_2} (e^{-t/\tau_1} - e^{-t/\tau_2}) - (e^{-t/\tau_2} - 1)
+    = 1 - \frac{\tau_1}{\tau_1 - \tau_2} e^{-t/\tau_1} + \frac{\tau_2}{\tau_1 - \tau_2} e^{-t/\tau_2}
+\end{eqnarray}
+which is the same solution as we get by solving $f_1$ and $f_2$ together.
 
 \bibliographystyle{unsrt}
 \bibliography{references}
