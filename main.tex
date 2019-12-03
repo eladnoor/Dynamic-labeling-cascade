@@ -71,16 +71,34 @@ where $\mathbf{M}$ and $\vec{g}$ are defined as:
 \subsection{INST-MFA can be solved as a first order linear inhomogeneous ODE}
 The general solution \cite{young_elementary_2008} for the inhomogeneous first order linear ODE in Equation \ref{eq:inhom_ode} is:
 \begin{eqnarray}\label{eq:inhom_ode_sol}
-    \vec{f}(t) = \vec{f}(0)~e^{\mathbf{M} t} + \int_0^t \vec{g}(\tau) \cdot e^{\mathbf{M} (t-\tau)} d\tau
+    \vec{f}(t_1) ~=~ \vec{f}(t_0) \cdot e^{\mathbf{M} (t_1 - t_0)} + \int_{t_0}^{t_1} \vec{g}(\tau) \cdot e^{\mathbf{M} (t_1 - \tau)} d\tau
 \end{eqnarray}
 
-In most of this manuscript, we will assume that the internal pools start completely unlabeled, i.e. $\vec{f}(0) = \vec{0}$, and so the term before the integral drops out. In addition, we will focus on the case where there is only one external pool, which turns from unlabeled to fully labeled at time $t = 0$. This means that \[\vec{g} = \begin{bmatrix} y_1 / s_1 & y_2 / s_2 & \ldots & y_n / s_n \end{bmatrix},\] where $y_i$ is the flux from the external pool to $S_i$. Since $\vec{g}$ is now constant, the integral in Equation \ref{eq:inhom_ode_sol} can be solved explicitly:
+In most of this manuscript, we will focus on the case where $\vec{g}$ is constant (for the more general case, see Section \ref{sec:non_constant_g}):
 \begin{eqnarray}
-    \vec{f}(t) ~=~ \vec{g} \int_0^t e^{\mathbf{M} (t-\tau)} d\tau ~=~
-    \vec{g} ~ \mathbf{M}^{-1} ~ \left( e^{\mathbf{M}t} - \mathbf{I} \right) =
-    \vec{g} ~ \mathbf{P} ~ \mathbf{J}^{-1} ~ \left( e^{\mathbf{J}t} - \mathbf{I} \right) \mathbf{P}^{-1}
+    \vec{f}(t_1) &=& 
+    \vec{f}(t_0) \cdot e^{\mathbf{M} (t_1 - t_0)} + \vec{g} \cdot \int_0^t e^{\mathbf{M} (t-\tau)} d\tau \nonumber\\
+    &=&
+    \vec{f}(t_0) \cdot e^{\mathbf{M} (t_1 - t_0)} + \vec{g} \cdot \mathbf{M}^{-1} \cdot  \left( e^{\mathbf{M}(t_1 - t_0)} - \mathbf{I} \right) \nonumber\\
+    &=&
+    \left(\vec{f}(t_0) + \vec{g} \cdot \mathbf{M}^{-1} \right) e^{\mathbf{M}(t_1 - t_0)} - \vec{g} \cdot \mathbf{M}^{-1}
+    \,.
+\end{eqnarray}
+
+We can further assume that we start the experiment at $t_0 = 0$ where all internal pool are unlabeled (i.e. $\vec{f}(0) = \vec{0}$), so the formula becomes:
+\begin{eqnarray}
+    \vec{f}(t) ~=~ 
+    \vec{g} ~ \mathbf{M}^{-1} e^{\mathbf{M}t} - \vec{g} ~ \mathbf{M}^{-1}
+    ~=~
+    \vec{g} ~ \mathbf{M}^{-1} \mathbf{P} ~e^{\mathbf{J}t} ~\mathbf{P}^{-1} 
+    - \vec{g} ~ \mathbf{M}^{-1}
 \end{eqnarray}
 where in the last step we used the Jordan normal form, i.e. $\mathbf{M} = \mathbf{P} \mathbf{J} \mathbf{P}^{-1}$.
+
+If we further assume that there is only one exchange flux coming in, that switches on at $t_0 = 0$ from unlabeled to labeled, and that all pools that receive that input have no other input fluxes. In this case\footnote{Explain why this is happening}, $\vec{g}~\mathbf{M}^{-1} = -\vec{1}_n$. That simplifies the solution even further to:
+\begin{eqnarray}
+    \vec{f}(t) ~=~ \vec{1}_n - \vec{1}_n ~ \mathbf{P} ~ e^{\mathbf{J}t} ~ \mathbf{P}^{-1}
+\end{eqnarray}
 
 \subsubsection{Defining the internal average labeled fraction}
 
@@ -131,7 +149,7 @@ We define $\tau_i \equiv \frac{s_i}{v_i}$ in order to reduce the number of param
 \vec{g} = \left[1/\tau_1~0~0~\ldots~0\right]\,.
 \end{eqnarray}
 
-We note that as $\mathbf{M}$ is triangular, its Jordan normal form is a diagonal matrix. Therefore, we can write $\mathbf{M} = \mathbf{P} \mathbf{D} \mathbf{P}^{-1}$, where $\mathbf{D}$ has the same values as the diagonal values of $\mathbf{M}$ (assuming they are distinct -- we discuss other cases in the next section). To simplify the solution for this ODE system, we define $\forall i \neq j:~q_{ij} \equiv (1 - \tau_i/\tau_j)^{-1}$, and $\forall i:~q_{ii} \equiv 1$, and use \href{https://www.sympy.org/}{Sympy} to find the Jordam normal form and calculate:
+We note that as $\mathbf{M}$ is triangular, its Jordan normal form is a diagonal matrix. Therefore, we can write $\mathbf{M} = \mathbf{P} \mathbf{D} \mathbf{P}^{-1}$, where $\mathbf{D}$ has the same values as the diagonal values of $\mathbf{M}$ (assuming they are distinct -- we discuss other cases in the next section). To simplify the solution for this ODE system, we define $\forall i \neq j:~q_{ij} \equiv (1 - \tau_i/\tau_j)^{-1}$, and $\forall i:~q_{ii} \equiv 1$, and use \href{https://www.sympy.org/}{Sympy} to find $\vec{g}~\mathbf{M}^{-1}$ and the Jordam normal form of $\mathbf{M}$:
 \[
 \mathbf{P}^{-1} =
 \begin{bmatrix}
@@ -141,35 +159,27 @@ We note that as $\mathbf{M}$ is triangular, its Jordan normal form is a diagonal
 \vdots\\
 0 & 0 & 0 & \ldots & 1
 \end{bmatrix}
+~~~~
+\vec{g}~\mathbf{M}^{-1} = \begin{bmatrix} -1 & -1 & \ldots & -1 \end{bmatrix}
 \]
 and:
 \[
-    \vec{g}~\mathbf{P}~\mathbf{J}^{-1}~\left( e^{\mathbf{J} t} - \mathbf{I} \right)
+    \vec{g}~\mathbf{M}^{-1}~\mathbf{P}~e^{\mathbf{J} t}
     =
     \begin{bmatrix}
-        (1 - e^{-t/\tau_1})\prod_{1}^1 q_{i1} & (e^{-t/\tau_2}-1) \prod_{1}^2 q_{i2} & \ldots & (e^{-t/\tau_n}-1) \prod_{1}^n q_{in}
+        -e^{-t/\tau_1} \prod_{1}^1 q_{i1} & -e^{-t/\tau_2} \prod_{1}^2 q_{i2} & \ldots & -e^{-t/\tau_n} \prod_{1}^n q_{in}
     \end{bmatrix}.
 \]
 
-Using these results in Equation \ref{eq:inhom_ode_sol} yields the following expression (where we move the $q$ products from the vector to the matrix on the right):
-\begin{eqnarray}
-	\vec{f}(t) ~=~
-    \begin{bmatrix}
-        1 - e^{-t/\tau_1} & e^{-t/\tau_2}-1 & \ldots & e^{-t/\tau_n}-1
-    \end{bmatrix}
-    \begin{bmatrix}
-        \prod_1^1 q_{i1} & \prod_1^2 q_{i1} & \prod_1^3 q_{i1}  & \ldots & \prod_1^n q_{i1} \\ \\
-        0 & \prod_1^2 q_{i2} & \prod_1^3 q_{i2} & \ldots & \prod_1^n q_{i2} \\
-        \vdots\\
-        0 & 0 & 0 & \ldots & \prod_1^n q_{in}
-    \end{bmatrix}\label{eq:lin_path_solution}
-\end{eqnarray}
-
-We can also write this equation in a compact way without using matrix multiplications:
-\begin{eqnarray}
-f_i(t) &=& 
-    \left(\prod_{k=1}^i q_{k1}\right) (1 - e^{-t/\tau_1}) ~+~
-    \sum_{j=2}^i \left(\prod_{k=1}^i q_{kj}\right) (e^{-t/\tau_j} - 1)
+Using these results in Equation \ref{eq:inhom_ode_sol} yields:
+\begin{align*}
+	f_1 &= 1 - e^{-t/\tau_1} \prod_{k=1}^1 q_{k1}\\
+	f_2 &= 1 - e^{-t/\tau_1} \prod_{k=1}^2 q_{k1} - e^{-t/\tau_2} \prod_{k=1}^2 q_{k2}\\
+	f_3 &= 1 - e^{-t/\tau_1} \prod_{k=1}^3 q_{k1} - e^{-t/\tau_2} \prod_{k=1}^3 q_{k2} - e^{-t/\tau_3} \prod_{k=1}^3 q_{k3}
+\end{align*}
+and we can thus see that the general formula is given by:
+\begin{eqnarray}\label{eq:lin_path_solution}
+f_i(t) &=& 1 - \sum_{j=1}^i e^{-t/\tau_j} \left(\prod_{k = 1, k \neq j}^i 1 - \tau_k/\tau_j\right)^{-1}
 \end{eqnarray}
 
 \subsection{Non-distinct eigenvalues}\label{sec:equal_taus}
@@ -188,7 +198,7 @@ For our general solution in Equation \ref{eq:lin_path_solution}, we made an impo
 \vec{g} = \left[1/\tau~0~0~\ldots~0\right]\,.
 \end{eqnarray}
 
-In this case, $\mathbf{J}$ is not a diagonal matrix, which makes the matrix solution seem a bit more complicated. However, SymPy can directly solve the equation, which is turns out to be:
+In this case, $\mathbf{J}$ is not a diagonal matrix, which makes the matrix solution seem a bit more complicated. However, SymPy can directly solve the equation, which turns out to be:
 \begin{eqnarray}\label{eq:equal_tau_solution}
     f_i(t) = 1 - e^{-\frac{t}{\tau}}\sum_{k=0}^{i-1} \frac{1}{k!}\left(\frac{t}{\tau}\right)^k\,.
 \end{eqnarray}
@@ -200,7 +210,7 @@ Assume that the pathway exists inside an exponentially growing cell, all species
 \end{equation}
 and therefore $\tau_i = s_i/v_i = s_i (\mu \sum_{k=i}^n s_k)^{-1}$. It is convenient to define the relative pool size of $S_i$ compared to all the downstream pool (including $S_i$ itself) as $\phi_i \equiv \mu\tau_i = s_i / \sum_{k=i}^n s_k$. In this case:
 \begin{equation}\label{eq:dilution}
-    f_i(t) = 1 - \sum_{j=1}^{i} \left(\prod_{k = 1, i \neq j}^{i} 1 - \phi_k/\phi_j\right)^{-1} e^{- \mu t / \phi_j}
+    f_i(t) = 1 - \sum_{j=1}^{i} e^{- \mu t / \phi_j} \left(\prod_{k = 1, i \neq j}^{i} 1 - \phi_k/\phi_j\right)^{-1}
 \end{equation}
 
 There is only one input flux, going into $S_1$, i.e. $y_{1 \rightarrow 1} = \mu \sum s_i$. We assume it is fully labeled, so $h_1 = 1$. We can now calculate $\fin$ as a function of time, by plugging these values into Equation \ref{eq:dfin_dt}:
@@ -511,16 +521,11 @@ We can reduce the number of parameters further by setting $\phi \equiv \frac{s_1
 \end{eqnarray}
 finding the Jordan normal form for $\mathbf{M}$ with \href{https://www.sympy.org/}{Sympy} and calculating:
 \begin{eqnarray}
-\vec{g}~\mathbf{P}~\mathbf{J}^{-1} = 
-    \begin{bmatrix}
-        -\frac{1}{1-\phi} & \frac{1}{x}
-    \end{bmatrix}
+\vec{g}~\mathbf{M}^{-1} = 
+\begin{bmatrix} -1 & -1 \end{bmatrix}
 ~~~
-e^{\mathbf{J} t} =
-    \begin{bmatrix}
-        e^{-\mu t} & 0 \\
-        0 & e^{-\mu t (x+1)/\phi}
-    \end{bmatrix}
+\vec{g}~\mathbf{M}^{-1}~\mathbf{P}~e^{\mathbf{J} t} = 
+\begin{bmatrix} -e^{-\mu t} / (1-\phi) & e^{-\mu t (x+1)/\phi} / x\end{bmatrix}
 ~~~
 \mathbf{P}^{-1} = 
     \begin{bmatrix}
@@ -528,33 +533,13 @@ e^{\mathbf{J} t} =
 		\frac{x(\phi-1)}{x + 1 - \phi} & \frac{\phi~x}{x + 1 - \phi} 
 	\end{bmatrix}
 \end{eqnarray}
-which are combined to give the solution:
+Using the formula $\vec{f}(t) = \vec{g}~\mathbf{M}^{-1}~\mathbf{P}~e^{\mathbf{J} t}~\mathbf{P}^{-1} - \vec{g}~\mathbf{M}^{-1}$ and focusing only on $f_2(t)$ we get:
 \begin{eqnarray}
-    f(t) = 
-    \vec{g} ~ \mathbf{P} ~ \mathbf{J}^{-1} ~ \left( e^{\mathbf{J t}} - \mathbf{I} \right) \mathbf{P}^{-1}
-    = 
-    \begin{bmatrix}
-		\frac{1-e^{-\mu t}}{1-\phi} &
-		-\frac{1 - e^{-\mu t (x+1)/\phi}}{x}
-	\end{bmatrix}
-    \begin{bmatrix}
-		\frac{x(1-\phi)}{x + 1 - \phi} & \frac{(1-\phi)(x+1)}{x + 1 - \phi} \\
-		-\frac{x(1-\phi)}{x + 1 - \phi} & \frac{\phi~x}{x + 1 - \phi} 
-	\end{bmatrix}
+    f_2 = 1 - \frac{x+1}{x+1-\phi} e^{-\mu t} + \frac{\phi}{x+1-\phi} e^{-\mu t (x+1)/\phi}
 \end{eqnarray}
-If we focus only on $f_2(t)$:
+Now, we make two substitutions more: $\phi' \equiv \phi/(1+x)$ and $e^{-\mu t} = 1 - \fin$. Note that the derivation of $\fin$ in Equation \ref{eq:fin_dilution} is valid also in this system where internal fluxes are not irreversible, since it only depends on the exchange fluxes. The result is:
 \begin{eqnarray}
-    f_2 &=& 
-    \frac{x+1}{x+1-\phi} (1 - e^{-\mu t}) -
-    \frac{\phi}{x+1-\phi}(1 - e^{-\mu t (x+1)/\phi})\\
-    &=&
-    1 - \frac{x+1}{x+1-\phi} e^{-\mu t} - 
-    \frac{\phi}{x+1-\phi} e^{-\mu t (x+1)/\phi}
-\end{eqnarray}
-and make two substitutions: $\phi' \equiv \phi/(1+x)$ and $e^{-\mu t} = 1 - \fin$. Note that the derivation of $\fin$ in Equation \ref{eq:fin_dilution} is valid also in this system where internal fluxes are not irreversible, since it only depends on the exchange fluxes. Finally, we get:
-\begin{eqnarray}
-    f_2 ~=~ 
-    1 + \frac{1}{1-\phi'} (1-\fin) + \frac{\phi'}{1-\phi'} (1-\fin)^{1/\phi'}
+    f_2 = 1 - \frac{1}{1-\phi'} (1-\fin) + \frac{\phi'}{1-\phi'} (1-\fin)^{1/\phi'}
 	\label{eq:two_step_reversible}\,.
 \end{eqnarray}
 
@@ -586,30 +571,10 @@ and therefore
 \end{eqnarray}
 or in other words, if we use an irreversible model to find the maturation, we might underestimate it, but not by more than a factor of $1-\phi_1$.
 
-\clearpage
-\section{Fitting measured data}
-
-\subsection{Using the 2-step model}
-The common scenario would be that $\tau_i$ are unknown, and we have several time point measurements of some or all $f_i$. In this example, we assume again a 3-step chain, where we measure $\fin$ and $f_2$, and the free parameters are $\phi_1$ and $\phi_2$. 
-
-\subsection{How to infer fluxes from labeling data}
-
-We assume that the data was generated from a system such as in equation \ref{eq:inhom_ode}, with a diagonalizable matrix $\mathbf{M}$. Then, we can fit our data (which is $\vec{f}$ measured at multiple time points) using the formula $\vec{f}(t) = \mathbf{A} e^{\vec{\lambda} t}$. Then, from equation \ref{eq:inhom_ode_sol} we know that $\mathbf{P} = \mathbf{A} \mathbf{D}^{-1}$, where $\mathbf{D}$ is some fully ranked diagonal matrix. Even though $\mathbf{D}$ is somehow dependent on $\mathbf{P}$ and $\mathbf{A}$, it wouldn't matter for finding $\mathbf{M}$, since:
-\begin{eqnarray}
-    \mathbf{M} = \mathbf{P}~\text{diag}(\vec{\lambda})~\mathbf{P}^{-1} = \mathbf{A}\mathbf{D}^{-1}~\text{diag}(\vec{\lambda})~\mathbf{D}\mathbf{A}^{-1} = 
-    \mathbf{A}\mathbf{D}^{-1}\mathbf{D}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1} = 
-    \mathbf{A}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1}
-\end{eqnarray}
-where $\text{diag}(\vec{\lambda})~\mathbf{D} = \mathbf{D}~\text{diag}(\vec{\lambda})$ since they are both diagonal matrices. Therefore, we can simply ignore the $\mathbf{D}$ matrix altogether, and use the solution:
-\begin{eqnarray}
-    \mathbf{\bar{V}} = \mathbf{M}^\top~\text{diag}(\vec{s}) = \left(\mathbf{A}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1} \right)^\top~\text{diag}(\vec{s})
-\end{eqnarray}
-where $\mathbf{\bar{V}} = \mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V})$, i.e. the fluxes would be the off-diagonal values of $\mathbf{\bar{V}}$.
-
-\section{Layers}
+\section{Time-variable input labeling fractions}\label{sec:non_constant_g}
 What if $\vec{g}(t)$ is not constant. If we know that it is itself generated by a (in)homogeneous linear ODE system, we can safely assume it can be described by a series of exponents:
 \begin{eqnarray}
-    \vec{g}(t) = \vec{\alpha} e^{\mathbf{G} t} + \vec{\beta}
+    \vec{g}(t) = \vec{\beta} + \vec{\alpha} e^{\mathbf{G} t}
 \end{eqnarray}
 for some $\vec{\beta} \in \mathbb{R}^n$ and $\mathbf{G} \in \mathbb{R}^{n \times n}$. Note that we can use zero padding ensure that the size of $\vec{\beta}$ and $\mathbf{G}$ match the number of internal pools. Now, we can solve Equation \ref{eq:inhom_ode_sol} for cases where $\vec{g}$ is not constant:
 \begin{eqnarray}
@@ -648,7 +613,29 @@ which means that $\vec{\alpha} = [-1/\tau_2]$, $\beta = [1/\tau_2]$ and $\mathbf
     &=& \frac{-\tau_1}{\tau_1 - \tau_2} (e^{-t/\tau_1} - e^{-t/\tau_2}) - (e^{-t/\tau_2} - 1)
     = 1 - \frac{\tau_1}{\tau_1 - \tau_2} e^{-t/\tau_1} + \frac{\tau_2}{\tau_1 - \tau_2} e^{-t/\tau_2}
 \end{eqnarray}
-which is the same solution as we get by solving $f_1$ and $f_2$ together.
+which is the same solution as we get by solving $f_1$ and $f_2$ together.which is the same solution as we get by solving $f_1$ and $f_2$ together.
+
+
+\clearpage
+\section{Fitting measured data}
+
+\subsection{Using the 2-step model}
+The common scenario would be that $\tau_i$ are unknown, and we have several time point measurements of some or all $f_i$. In this example, we assume again a 3-step chain, where we measure $\fin$ and $f_2$, and the free parameters are $\phi_1$ and $\phi_2$. 
+
+\subsection{How to infer fluxes from labeling data}
+
+We assume that the data was generated from a system such as in equation \ref{eq:inhom_ode}, with a diagonalizable matrix $\mathbf{M}$. Then, we can fit our data (which is $\vec{f}$ measured at multiple time points) using the formula $\vec{f}(t) = \mathbf{A} e^{\vec{\lambda} t}$. Then, from equation \ref{eq:inhom_ode_sol} we know that $\mathbf{P} = \mathbf{A} \mathbf{D}^{-1}$, where $\mathbf{D}$ is some fully ranked diagonal matrix. Even though $\mathbf{D}$ is somehow dependent on $\mathbf{P}$ and $\mathbf{A}$, it wouldn't matter for finding $\mathbf{M}$, since:
+\begin{eqnarray}
+    \mathbf{M} = \mathbf{P}~\text{diag}(\vec{\lambda})~\mathbf{P}^{-1} = \mathbf{A}\mathbf{D}^{-1}~\text{diag}(\vec{\lambda})~\mathbf{D}\mathbf{A}^{-1} = 
+    \mathbf{A}\mathbf{D}^{-1}\mathbf{D}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1} = 
+    \mathbf{A}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1}
+\end{eqnarray}
+where $\text{diag}(\vec{\lambda})~\mathbf{D} = \mathbf{D}~\text{diag}(\vec{\lambda})$ since they are both diagonal matrices. Therefore, we can simply ignore the $\mathbf{D}$ matrix altogether, and use the solution:
+\begin{eqnarray}
+    \mathbf{\bar{V}} = \mathbf{M}^\top~\text{diag}(\vec{s}) = \left(\mathbf{A}~\text{diag}(\vec{\lambda})~\mathbf{A}^{-1} \right)^\top~\text{diag}(\vec{s})
+\end{eqnarray}
+where $\mathbf{\bar{V}} = \mathbf{V} - \text{diag}(\vec{1}_n~\mathbf{V})$, i.e. the fluxes would be the off-diagonal values of $\mathbf{\bar{V}}$.
+
 
 \bibliographystyle{unsrt}
 \bibliography{references}
